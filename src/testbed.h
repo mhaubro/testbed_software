@@ -5,4 +5,6 @@
 #define SIGNAL_RESET_FILE "/reset"
 #define SIGNAL_FLASH_FILE "/flash"
 
+#define LOGCOUNT 3
+
 #endif
