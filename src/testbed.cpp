@@ -3,47 +3,38 @@
 #include "execcmd.h"
 #include <iostream>
 #include <string>
-
 #include <sys/types.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <future>
-#include <iostream>
-#include <chrono>
 #include <thread>
+#include <stdlib.h>
+#include <chrono>
+#include <vector>
+#include <sstream>
+#include <filesystem>
 
-int pid_main = -1;
-int pid_acm0 = -1;
-int pid_acm1 = -1;
 
 
 //We assume the mac should only be found once.
 char mac[18];
 
-/*Gets dropbox directory*/
-std::string getDBDirectory(){
-    std::string homedir = getenv("HOME");
-    homedir += "/Dropbox";
-    return homedir;
-}
-
 /*Gets my directory*/
 std::string getMyDirectory(){
     std::string homedir = getenv("HOME");
-    homedir += "/Dropbox/testbed/" + std::string(mac);
+    homedir += "/testbed/" + std::string(mac);
     return homedir;
 }
 
 /*Gets the full path to the reset-file*/
 std::string resetFilePath(){
-    std::string dir = getMyDirectory() + SIGNAL_FOLDER_NAME + SIGNAL_RESET_FILE;
+    std::string dir = getMyDirectory() + SIGNAL_RESET_FILE;
     return dir;
 }
 
 /*Gets the full path to the flash-signal-file*/
 std::string flashsignalFilePath(){
-    std::string dir = getMyDirectory() + SIGNAL_FOLDER_NAME + SIGNAL_FLASH_FILE;
+    std::string dir = getMyDirectory() + SIGNAL_FLASH_FILE;
     return dir;
 }
 
@@ -64,7 +55,7 @@ std::string logFileFolder(){
     return path;
 }
 
-std::string getMyLogFile(){
+std::string GetMyLogFolder(){
     std::string path = logFileFolder() + "/log1";
     std::string cmd = "mkdir -p " + path;
     system(cmd.c_str());
@@ -75,6 +66,58 @@ void deleteFile(std::string path){
     std::string command = "rm " + path;
     system(command.c_str());
 }
+
+/*Gets array with grabserial process ids*/
+std::vector<int> getGrabSerialProcessArray(){
+    /* Grab PIDs of grabserial processes */
+    std::string grabserial_processes = exec("pgrep grabserial");
+
+    std::vector<int> processes;
+    std::istringstream ss(grabserial_processes);
+
+    std::string line;
+
+    while(std::getline(ss, line)) {
+        processes.push_back(std::stoi(line));
+	}
+    return processes;
+}
+
+
+void terminateGrabSerial(){
+
+    std::vector<int> processes = getGrabSerialProcessArray();
+
+    /*Do the killing to ensure we start on a clean slate*/
+    for (int i = 0; i < processes.size(); i++){
+        system(std::string("kill " + processes[i]).c_str());
+    }
+}
+
+/*Start grabserial*/
+void startGrabSerial(){
+    system(std::string("sudo grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM0.txt"  + " &").c_str());
+    system(std::string("sudo grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
+}
+
+/*Terminate all instances and start new ones*/
+void resetGrabSerial(){
+    terminateGrabSerial();
+    startGrabSerial();    
+}
+
+void rcloneCommand(std::string cmd){
+    system(std::string("rclone " + cmd));
+}
+
+void rcloneUploadToExternal(){
+
+}
+
+void rcloneDownloadFromExternal(){
+    
+}
+
 
 bool folderExists(std::string path){
 
@@ -102,15 +145,11 @@ bool fileExists(std::string path){
 
 /*Runs the system command to pipe to output. Is blocking until the thread is terminated somehow or grabserial is terminated*/
 void outputSerial(std::string serial_device){
-    std::string command = "sudo grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + getMyLogFile(); 
+    std::string command = "sudo grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder(); 
 }
 
 /*Checks if we have dropbox. Creates other necessary directories if needed*/
 bool directoryCheck(){
-    if (!folderExists(getDBDirectory().c_str())){
-        return false;
-    }
-
     std::string mydir = getMyDirectory();
 
     std::string paths_needed[2 + LOGCOUNT];
@@ -144,37 +183,51 @@ void resetLogs(){
     system(deleteLastFolder.c_str());
 }
 
-/*Checks if we have any device connected at all - will only run at startup*/
+bool checkGrabSerialAlive(){
+    /*If we have less than two processes running it's no good*/
+    return (getGrabSerialProcessArray().size() != 2);
+}
+
+
+
+
+/* Something better might be nice */
 bool checkForDevice(){
-
-    /*Old idea: Check dmesg*/
-    /*
-    std::string serial_devices = exec("dmesg | grep tty\n");
-    */
-    /*Very hardcoded way of checking for devices, but as it is always on one of the two on both ubuntu server, antergos and manjaro */
-
-    /*
-    if ((serial_devices.find("ttyACM0") != std::string::npos) || (serial_devices.find("ttyACM1") != std::string::npos)) {
+    if(checkGrabSerialAlive()){
         return true;
-    }
-    */
+    } 
+    startGrabSerial();
+    /*Make sure the process have started and terminated if there is no serial device */
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    /* New Idea: execute grabserial, see what happens */
-
-    return false;
+    /*If we're connected it's good, if not, there is no device*/
+    return checkGrabSerialAlive();
 }
 
-void startExperiment(){
-
+void resetMCU(){
+    system(std::string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run\"").c_str());
 }
 
-void flashDevice(){
+void flashMCU(){
+    std::string path = std::string(getMyDirectory() + "/flash");
 
+    /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        system(std::string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + entry.path() + " verify reset exit\"").c_str())
+    }    
 }
+
+
 
 bool flashFlag(){
-    return true;
 
+    if (fileExists(flashFilePath()){
+        deleteFile(flashFilePath());
+        system("")
+        /*Delete file*/
+        return true;
+    }
+    return false;
 }
 
 bool resetFlag(){
@@ -182,39 +235,65 @@ bool resetFlag(){
 
 }
 
+void uploadData(){
+    std::string localpath = getMyDirectory();
+    std::string remotepath = std::string(REMOTEROOT) + "/" + std::string(mac);
+    system(std::string("rclone copy DTUHPC:" + localpath + " " + remotepath).c_str());
+}
+
+/*flash and signals*/
+void downloadData(){
+    std::string localpath = getMyDirectory();
+    std::string remotepath = std::string(REMOTEROOT) + "/" + std::string(mac);
+    system(std::string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
+}
+
 void programLoop(){
 
     while(true){
+
+        while (!checkForDevice()){
+            /* We wait until we have a device */
+            std::this_thread::sleep_for(std::chrono::seconds(15));
+        }
+        downloadData();
         if (resetFlag()){
-
+            terminateGrabSerial();
+            resetLogs();
+            startGrabSerial();
+            resetMCU();
         } else if (flashFlag()){
-
+            terminateGrabSerial();
+            resetLogs();
+            flashMCU();
+            startGrabSerial();
+            resetMCU();
         }
 
+        uploadData();
 
-        std::cout << "Hi\n";
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
+
+
+
+
+
+
+
 int main(){
-    pid_main = getpid();
+
     bool macSucces = getMacAddress(mac);
 
-    if (!macSucces){
-        /*Maybe do something intelligent here, fake a pseudo unique id, find a uid a different way*/
-    }
-    if (!directoryCheck()){
-        /*We stop the program*/
-        std::cout << "No dropbox\n";
-    }
+    directoryCheck();
 
-/*    std::cout << exec("dmesg | grep tty\n");
-    std::cout << exec("dmesg | grep tty\n");
+    //uploadData(); /*We'll just show we're online*/
+    flashMCU();
+    //programLoop();
 
-    programLoop();*/
-
-    system("sudo grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t > log.txt");
+    //std::cout <<  getMyDirectory() << std::endl;
 
     return 0;
 }

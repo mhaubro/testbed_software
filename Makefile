@@ -3,7 +3,7 @@
 #
 
 CPP = g++
-CPP_FLAGS = -std=c++17 -g -O2#Using -O2 to relatively aggressively optimize. Use -g to use with gdb
+CPP_FLAGS = -std=c++17 -g -O2 -lstdc++fs #Using -O2 to relatively aggressively optimize. Use -g to use with gdb
 #gdb requires hacks for now.
 
 .PHONY: all clean
@@ -38,7 +38,7 @@ OBJS = $(foreach d, $(CPPSHORT), $(OBJECT_DIR)$(d).o)
 #OBJ_SC = $(foreach d, $(basename $(CPP_FILES)), $(d).cpp.o)
 
 testbed_process: $(OBJS)
-	$(CPP) -o $(BINDIR)/testbed_process $^
+	$(CPP) -o $(BINDIR)/testbed_process $^ $(CPP_FLAGS)
 
 EXECUTABLE += $(Root_Directory)/testbed_process
 
