@@ -14,71 +14,86 @@
 #include <sstream>
 #include <filesystem>
 
-
+using namespace std;
 
 //We assume the mac should only be found once.
 char mac[18];
 
 /*Gets my directory*/
-std::string getMyDirectory(){
-    std::string homedir = getenv("HOME");
-    homedir += "/testbed/" + std::string(mac);
+string getMyDirectory(){
+    string homedir = getenv("HOME");
+    homedir += "/testbed/" + string(mac);
     return homedir;
 }
 
 /*Gets the full path to the reset-file*/
-std::string resetFilePath(){
-    std::string dir = getMyDirectory() + SIGNAL_RESET_FILE;
+string resetFilePath(){
+    string dir = getMyDirectory() + "/signals" + SIGNAL_RESET_FILE;
     return dir;
 }
 
-/*Gets the full path to the flash-signal-file*/
-std::string flashsignalFilePath(){
-    std::string dir = getMyDirectory() + SIGNAL_FLASH_FILE;
-    return dir;
+string flashFileFolder(){
+    string path = getMyDirectory() + "/flash";
+    return path;
 }
-
-std::string flashFileFolder(){
-    std::string path = getMyDirectory() + "/flash";
+string signalFileFolder(){
+    string path = getMyDirectory() + "/signals";
     return path;
 }
 
-/*Gets the full path to the flash-file to be flashed to the device*/
-std::string flashFilePath(){
-    std::string path = flashFileFolder();
+string flashSignalPath(){
+    string path = signalFileFolder() + SIGNAL_FLASH_FILE;
     /*Find any file in this folder*/
     return path;
 }
 
-std::string logFileFolder(){
-    std::string path = getMyDirectory() + "/logs";
+string logFileFolder(){
+    string path = getMyDirectory() + "/logs";
     return path;
 }
 
-std::string GetMyLogFolder(){
-    std::string path = logFileFolder() + "/log1";
-    std::string cmd = "mkdir -p " + path;
+/*We upload liveness, so it's placed in logs*/
+string liveSignalPath(){
+    string path = logFileFolder() + SIGNAL_LIVE_FILE;
+    /*Find any file in this folder*/
+    return path;
+}
+
+
+
+string GetMyLogFolder(){
+    string path = logFileFolder() + "/log0";
+    string cmd = "mkdir -p " + path;
     system(cmd.c_str());
     return path;
 }
 
-void deleteFile(std::string path){
-    std::string command = "rm " + path;
+void deleteFile(string path){
+    string command = "rm " + path;
     system(command.c_str());
 }
 
+void rcloneCommand(string cmd){
+    system(string("rclone " + cmd).c_str());
+}
+
+void deleteRemote(string path){
+    rcloneCommand(string("delete ") + RCLONE_REMOTE + REMOTEROOT + "/" + string(mac) + path);
+}
+
+
 /*Gets array with grabserial process ids*/
-std::vector<int> getGrabSerialProcessArray(){
+vector<int> getGrabSerialProcessArray(){
     /* Grab PIDs of grabserial processes */
-    std::string grabserial_processes = exec("pgrep grabserial");
+    string grabserial_processes = exec("pgrep grabserial");
 
-    std::vector<int> processes;
-    std::istringstream ss(grabserial_processes);
+    vector<int> processes;
+    istringstream ss(grabserial_processes);
 
-    std::string line;
+    string line;
 
-    while(std::getline(ss, line)) {
-        processes.push_back(std::stoi(line));
+    while(getline(ss, line)) {
+        processes.push_back(stoi(line));
 	}
     return processes;
 }
@@ -86,18 +101,20 @@ std::vector<int> getGrabSerialProcessArray(){
 
 void terminateGrabSerial(){
 
-    std::vector<int> processes = getGrabSerialProcessArray();
+    vector<int> processes = getGrabSerialProcessArray();
 
     /*Do the killing to ensure we start on a clean slate*/
     for (int i = 0; i < processes.size(); i++){
-        system(std::string("kill " + processes[i]).c_str());
+        system(string("kill " + processes[i]).c_str());
     }
 }
 
 /*Start grabserial*/
 void startGrabSerial(){
-    system(std::string("sudo grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM0.txt"  + " &").c_str());
-    system(std::string("sudo grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
+    cout << "start_grab" << endl;
+    system("pkill grabserial");
+    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM0.txt"  + " &").c_str());
+    system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
 }
 
 /*Terminate all instances and start new ones*/
@@ -106,20 +123,9 @@ void resetGrabSerial(){
     startGrabSerial();    
 }
 
-void rcloneCommand(std::string cmd){
-    system(std::string("rclone " + cmd));
-}
-
-void rcloneUploadToExternal(){
-
-}
-
-void rcloneDownloadFromExternal(){
-    
-}
 
 
-bool folderExists(std::string path){
+bool folderExists(string path){
 
     struct stat info;
 
@@ -131,7 +137,7 @@ bool folderExists(std::string path){
         return false;
 }
 
-bool fileExists(std::string path){
+bool fileExists(string path){
 
     struct stat info;
 
@@ -144,48 +150,67 @@ bool fileExists(std::string path){
 }
 
 /*Runs the system command to pipe to output. Is blocking until the thread is terminated somehow or grabserial is terminated*/
-void outputSerial(std::string serial_device){
-    std::string command = "sudo grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder(); 
+void outputSerial(string serial_device){
+    string command = "grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder(); 
 }
+
+void uploadData(){
+    cout << "Uploading\n";
+    string localpath = getMyDirectory() + string("/logs");
+    string remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
+    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
+    /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
+    localpath = liveSignalPath();
+    remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
+    system(string("touch " + liveSignalPath()).c_str());
+    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
+}
+
 
 /*Checks if we have dropbox. Creates other necessary directories if needed*/
 bool directoryCheck(){
-    std::string mydir = getMyDirectory();
+    string mydir = getMyDirectory();
 
-    std::string paths_needed[2 + LOGCOUNT];
+    string paths_needed[3 + LOGCOUNT];
 
     paths_needed[0] = logFileFolder();
     paths_needed[1] = flashFileFolder();
+    paths_needed[2] = signalFileFolder();
     /*Create log folders*/
     for (int i = 0; i < LOGCOUNT; i++){
-        paths_needed[2 + i] = logFileFolder() + "/log" + std::to_string(i);
+        paths_needed[3 + i] = logFileFolder() + "/log" + to_string(i);
     }
 
-    for (int i = 0; i < (2 + LOGCOUNT); i++){
-        std::string command = "mkdir -p " + paths_needed[i];
+    for (int i = 0; i < (3 + LOGCOUNT); i++){
+        string command = "mkdir -p " + paths_needed[i];
         system(command.c_str());
     }
+
+    /*Ensure that we are very much online*/
+    string localpath = getMyDirectory();
+    string remotepath = REMOTEROOT + "/" + string(mac);
+    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
 
     return true;
 }
 
 /*Restes logs, moves log1 to log2, log2 to log3 etc*/
 void resetLogs(){
-    std::string deleteLastFolder = "rm -rf " + logFileFolder() + "/log" + std::to_string(LOGCOUNT - 1);
+    string deleteLastFolder = "rm -rf " + logFileFolder() + "/log" + to_string(LOGCOUNT - 1);
     system(deleteLastFolder.c_str());
 
     for (int i = LOGCOUNT - 2; i >= 0; i--){
         /*Rename folder log_i to log_i+1*/
-        std::string cmd = "mv " + logFileFolder() + "/log" + std::to_string(i) + " " + logFileFolder() + "/log" + std::to_string(i + 1);
+        string cmd = "mv " + logFileFolder() + "/log" + to_string(i) + " " + logFileFolder() + "/log" + to_string(i + 1);
         system(cmd.c_str());
     }
-    std::string deleteContentOfFirstFolder = "rm -rf " + logFileFolder() + "/log" + std::to_string(1) + "/*";
-    system(deleteLastFolder.c_str());
+    string deleteContentOfFirstFolder = "rm -rf " + logFileFolder() + "/log" + to_string(1) + "/*";
+    system(deleteContentOfFirstFolder.c_str());
 }
 
 bool checkGrabSerialAlive(){
     /*If we have less than two processes running it's no good*/
-    return (getGrabSerialProcessArray().size() != 2);
+    return (getGrabSerialProcessArray().size() == 2);
 }
 
 
@@ -198,32 +223,31 @@ bool checkForDevice(){
     } 
     startGrabSerial();
     /*Make sure the process have started and terminated if there is no serial device */
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    this_thread::sleep_for(chrono::seconds(1));
 
     /*If we're connected it's good, if not, there is no device*/
     return checkGrabSerialAlive();
 }
 
 void resetMCU(){
-    system(std::string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run\"").c_str());
 }
 
 void flashMCU(){
-    std::string path = std::string(getMyDirectory() + "/flash");
-
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
-    for (const auto & entry : std::filesystem::directory_iterator(path)){
-        system(std::string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + entry.path() + " verify reset exit\"").c_str())
-    }    
+    for (const auto & entry : filesystem::directory_iterator(flashFileFolder())){
+        system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program \"" + string(entry.path()) + " verify reset exit\"").c_str());
+        deleteFile(entry.path());
+        //deleteRemote(entry.path());
+    }
+
 }
-
-
 
 bool flashFlag(){
 
-    if (fileExists(flashFilePath()){
-        deleteFile(flashFilePath());
-        system("")
+    if (fileExists(flashSignalPath())){
+        deleteFile(flashSignalPath());
+        deleteRemote(std::string("/signals") + SIGNAL_FLASH_FILE);
         /*Delete file*/
         return true;
     }
@@ -231,22 +255,29 @@ bool flashFlag(){
 }
 
 bool resetFlag(){
-    return true;
+    if (fileExists(resetFilePath())){
+        deleteFile(resetFilePath());
+        deleteRemote(std::string("/signals") + SIGNAL_RESET_FILE);
 
+        return true;
+    }
+    return false;
 }
 
-void uploadData(){
-    std::string localpath = getMyDirectory();
-    std::string remotepath = std::string(REMOTEROOT) + "/" + std::string(mac);
-    system(std::string("rclone copy DTUHPC:" + localpath + " " + remotepath).c_str());
-}
 
 /*flash and signals*/
+
 void downloadData(){
-    std::string localpath = getMyDirectory();
-    std::string remotepath = std::string(REMOTEROOT) + "/" + std::string(mac);
-    system(std::string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
+    cout << "Downloading\n";
+    string localpath = getMyDirectory() + string("/signals");
+    string remotepath = REMOTEROOT + "/" + string(mac) + string("/signals");
+    system(string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
+
+    localpath = getMyDirectory() + string("/flash");
+    remotepath = string(REMOTEROOT) + "/" + string(mac) + string("/flash");
+    system(string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
 }
+
 
 void programLoop(){
 
@@ -254,15 +285,16 @@ void programLoop(){
 
         while (!checkForDevice()){
             /* We wait until we have a device */
-            std::this_thread::sleep_for(std::chrono::seconds(15));
+            this_thread::sleep_for(chrono::seconds(15));
         }
-        downloadData();
+        uploadData();
         if (resetFlag()){
             terminateGrabSerial();
             resetLogs();
             startGrabSerial();
             resetMCU();
-        } else if (flashFlag()){
+        } 
+        if (flashFlag()){
             terminateGrabSerial();
             resetLogs();
             flashMCU();
@@ -270,9 +302,9 @@ void programLoop(){
             resetMCU();
         }
 
-        uploadData();
-
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        downloadData();
+        this_thread::sleep_for(chrono::seconds(10));
+        //resetGrabSerial();
     }
 }
 
@@ -284,16 +316,13 @@ void programLoop(){
 
 
 int main(){
-
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
-
     //uploadData(); /*We'll just show we're online*/
-    flashMCU();
-    //programLoop();
+    programLoop();
 
-    //std::cout <<  getMyDirectory() << std::endl;
+    //cout <<  getMyDirectory() << endl;
 
     return 0;
 }
