@@ -158,12 +158,12 @@ void uploadData(){
     cout << "Uploading\n";
     string localpath = getMyDirectory() + string("/logs");
     string remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
-    system(string("rclone copy " + localpath + " " + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     localpath = liveSignalPath();
     remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
     system(string("touch " + liveSignalPath()).c_str());
-    system(string("rclone copy " + localpath + " " + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
 }
 
 

@@ -6,7 +6,7 @@
 #define SIGNAL_LIVE_FILE std::string("/live.command")
 
 #define REMOTEROOT std::string("~/testbed")
-#define RCLONE_REMOTE std::string("DTUHPC:")
+#define RCLONE_REMOTE std::string(" DTUHPC:")
 
 #define LOGCOUNT 3
 
