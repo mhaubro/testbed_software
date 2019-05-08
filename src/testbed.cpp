@@ -154,8 +154,18 @@ void outputSerial(string serial_device){
     string command = "grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder(); 
 }
 
+void publishMac(){
+    string localpath = getMyDirectory();
+    string remotepath = REMOTEROOT + "/" + string(mac);
+    /*Ensure testbed-folder is online*/
+    system(string("rclone mkdir " + RCLONE_REMOTE + REMOTEROOT).c_str());
+    /*Publish our mac online*/
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+}
+
 void uploadData(){
     cout << "Uploading\n";
+    publishMac();
     string localpath = getMyDirectory() + string("/logs");
     string remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
     system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
@@ -165,6 +175,7 @@ void uploadData(){
     system(string("touch " + liveSignalPath()).c_str());
     system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
 }
+
 
 
 /*Checks if we have dropbox. Creates other necessary directories if needed*/
@@ -187,9 +198,7 @@ bool directoryCheck(){
     }
 
     /*Ensure that we are very much online*/
-    string localpath = getMyDirectory();
-    string remotepath = REMOTEROOT + "/" + string(mac);
-    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+    publishMac();
 
     return true;
 }
