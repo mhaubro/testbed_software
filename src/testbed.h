@@ -8,6 +8,8 @@
 #define REMOTEROOT std::string("~/testbed")
 #define RCLONE_REMOTE std::string(" DTUHPC:")
 
-#define LOGCOUNT 3
+
+#define WAITTIME 5
+#define LOGCOUNT 5
 
 #endif

@@ -295,7 +295,7 @@ void programLoop(){
 
         while (!checkForDevice()){
             /* We wait until we have a device */
-            this_thread::sleep_for(chrono::seconds(15));
+            this_thread::sleep_for(chrono::seconds(30));
         }
         cout << "uploading\n";
         uploadData();
@@ -317,7 +317,7 @@ void programLoop(){
 
         cout << "downloading\n";
         downloadData();
-        this_thread::sleep_for(chrono::seconds(15));
+        this_thread::sleep_for(chrono::seconds(WAITTIME));
         //resetGrabSerial();
     }
 }
@@ -330,7 +330,7 @@ void programLoop(){
 
 
 int main(){
-    this_thread::sleep_for(chrono::seconds(15));
+    this_thread::sleep_for(chrono::seconds(WAITTIME));
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
