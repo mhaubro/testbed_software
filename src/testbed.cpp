@@ -325,7 +325,12 @@ int main(){
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
-    //uploadData(); /*We'll just show we're online*/
+    //uploadData(); /*We'll just show we're online*/    
+    resetLogs();
+    if (checkForDevice()){
+        resetMCU();
+    }                
+
     programLoop();
 
     //cout <<  getMyDirectory() << endl;
