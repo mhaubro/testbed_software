@@ -158,12 +158,12 @@ void uploadData(){
     cout << "Uploading\n";
     string localpath = getMyDirectory() + string("/logs");
     string remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
-    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     localpath = liveSignalPath();
     remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
     system(string("touch " + liveSignalPath()).c_str());
-    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
 }
 
 
@@ -189,7 +189,7 @@ bool directoryCheck(){
     /*Ensure that we are very much online*/
     string localpath = getMyDirectory();
     string remotepath = REMOTEROOT + "/" + string(mac);
-    system(string("rclone copy " + localpath + " DTUHPC:" + remotepath + " --create-empty-src-dirs").c_str());
+    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
 
     return true;
 }
@@ -236,9 +236,10 @@ void resetMCU(){
 void flashMCU(){
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
     for (const auto & entry : filesystem::directory_iterator(flashFileFolder())){
-        system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program \"" + string(entry.path()) + " verify reset exit\"").c_str());
+        system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
+        cout << "flashed file" << endl;
         deleteFile(entry.path());
-        //deleteRemote(entry.path());
+        deleteRemote(entry.path());
     }
 
 }
@@ -271,11 +272,11 @@ void downloadData(){
     cout << "Downloading\n";
     string localpath = getMyDirectory() + string("/signals");
     string remotepath = REMOTEROOT + "/" + string(mac) + string("/signals");
-    system(string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
+    system(string("rclone copy " + RCLONE_REMOTE + remotepath + " " + localpath).c_str());
 
     localpath = getMyDirectory() + string("/flash");
     remotepath = string(REMOTEROOT) + "/" + string(mac) + string("/flash");
-    system(string("rclone copy DTUHPC:" + remotepath + " " + localpath).c_str());
+    system(string("rclone copy " + RCLONE_REMOTE + remotepath + " " + localpath).c_str());
 }
 
 
@@ -289,12 +290,14 @@ void programLoop(){
         }
         uploadData();
         if (resetFlag()){
+            cout << "Resetting" << endl;
             terminateGrabSerial();
             resetLogs();
             startGrabSerial();
             resetMCU();
         } 
         if (flashFlag()){
+            cout << "Flashing" << endl;
             terminateGrabSerial();
             resetLogs();
             flashMCU();
@@ -303,7 +306,7 @@ void programLoop(){
         }
 
         downloadData();
-        this_thread::sleep_for(chrono::seconds(10));
+        this_thread::sleep_for(chrono::seconds(15));
         //resetGrabSerial();
     }
 }

@@ -5,7 +5,7 @@
 #define SIGNAL_FLASH_FILE std::string("/flash.command")
 #define SIGNAL_LIVE_FILE std::string("/live.command")
 
-#define REMOTEROOT std::string("/zhome/bb/c/88090/testbed")
+#define REMOTEROOT std::string("~/testbed")
 #define RCLONE_REMOTE std::string("DTUHPC:")
 
 #define LOGCOUNT 3
