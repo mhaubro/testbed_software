@@ -13,6 +13,7 @@
 #include <vector>
 #include <sstream>
 #include <filesystem>
+#include <chrono>
 
 using namespace std;
 
@@ -290,6 +291,7 @@ void downloadData(){
 
 
 void programLoop(){
+    auto start = chrono::steady_clock::now();
 
     while(true){
 
@@ -305,6 +307,7 @@ void programLoop(){
             resetLogs();
             startGrabSerial();
             resetMCU();
+            start = chrono::steady_clock::now();
         } 
         if (flashFlag()){
             cout << "Flashing" << endl;
@@ -313,12 +316,17 @@ void programLoop(){
             flashMCU();
             startGrabSerial();
             resetMCU();
+            start = chrono::steady_clock::now();
+
         }
 
         cout << "downloading\n";
         downloadData();
-        this_thread::sleep_for(chrono::seconds(WAITTIME));
-        //resetGrabSerial();
+        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() > 60*IDLE_AFTER_MINUTES){
+            this_thread::sleep_for(chrono::seconds(IDLE_WAITTIME));
+        } else {
+            this_thread::sleep_for(chrono::seconds(WAITTIME));
+        }
     }
 }
 
@@ -330,7 +338,9 @@ void programLoop(){
 
 
 int main(){
+
     this_thread::sleep_for(chrono::seconds(WAITTIME));
+
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
