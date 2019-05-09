@@ -114,8 +114,8 @@ void terminateGrabSerial(){
 void startGrabSerial(){
     cout << "start_grab" << endl;
     system("pkill grabserial");
-    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM0.txt"  + " -S -T &").c_str());
-    //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t -o " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
+    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder() + "/logACM0.txt"  + " -S -T &").c_str());
+    //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
 }
 
 /*Terminate all instances and start new ones*/
