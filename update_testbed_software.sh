@@ -8,6 +8,7 @@ do
     if git pull | grep -q 'Already up to date'; then
         echo "match"
     else
+        echo "building and restarting"
         make clean
         make
         systemctl restart testbed-software.service
