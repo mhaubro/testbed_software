@@ -6,7 +6,7 @@ i=1
 while [ "$i" -ne 0 ]
 do
     if git pull | grep -q 'Already up to date'; then
-        
+        echo "match"
     else
         make clean
         make
