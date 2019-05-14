@@ -56,6 +56,6 @@ INCLUDE_DIRS = $(foreach dir, $(basename $(INCLUDE_TEMP)), -I$(dir))
 #EXECUTABLES += $(Root_Directory)/prober $(Root_Directory)/maketable $(Root_Directory)/searcher
 
 clean:
-	rm $(EXECUTABLE) $(OBJS)
+	rm $(OBJS)
 
 export INCLUDE_DIRS 
