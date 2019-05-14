@@ -9,9 +9,9 @@
 #define RCLONE_REMOTE std::string(" DTUHPC:")
 
 
-#define WAITTIME 5//Seconds
+#define WAITTIME 1//Seconds
 #define LOGCOUNT 5
 
 #define IDLE_AFTER_MINUTES 20
-#define IDLE_WAITTIME 60//Seconds
+#define IDLE_WAITTIME 3//Seconds
 #endif
