@@ -251,7 +251,6 @@ void flashMCU(){
         deleteFile(entry.path());
         deleteRemote(entry.path());
     }
-
 }
 
 bool flashFlag(){
