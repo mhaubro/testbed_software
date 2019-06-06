@@ -48,15 +48,15 @@ string localNewExperimentFlagPath(){
 }
 
 string myremoteSignalsFromRpiFolder(){
-    string path = remoteSignalsFromRpiFolder() + "/" + mac;
+    string path = remoteSignalsFromRpiFolder() + "/" + string(mac);
     return path;
 }
 string myremoteSignalsToRpiFolder(){
-    string path = remoteSignalsToRpiFolder() + "/" + mac;
+    string path = remoteSignalsToRpiFolder() + "/" + string(mac);
     return path;
 }
 string myRemoteOutputFolder(){
-    string path = remoteOutputFolder() + "/" + mac;
+    string path = remoteOutputFolder() + "/" + string(mac);
     return path;
 }
 
@@ -125,10 +125,10 @@ void resetGrabSerial(){
 void publishMe(){
     /*Sanity checks*/
     rcloneCommand("mkdir " + REMOTEROOT);
-    rcloneCommand("mkdir " + REMOTEROOT + EXPERIMENTFOLDER);
+    rcloneCommand("mkdir " + remoteOutputFolder());
     rcloneCommand("mkdir " + myRemoteOutputFolder());
-    rcloneCommand("mkdir " + REMOTEROOT + FRONTENDSIGNALFOLDER);
-    rcloneCommand("mkdir " + REMOTEROOT + BACKENDSIGNALFOLDER);
+    rcloneCommand("mkdir " + remoteSignalsFromRpiFolder());
+    rcloneCommand("mkdir " + remoteSignalsToRpiFolder());
     rcloneCommand("mkdir " + myremoteSignalsFromRpiFolder());
     rcloneCommand("mkdir " + myremoteSignalsToRpiFolder());
 }
