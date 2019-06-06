@@ -2,7 +2,6 @@
 #include "auxiliary.h"
 using namespace std;
 
-
 string getRemoteDirectory(){
     return RCLONE_REMOTE + REMOTEROOT;
 }
