@@ -56,6 +56,11 @@ void resetLogs(){
     system(cmd.c_str());
 }
 
+void deleteFlags(){
+    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_GO_FILE).c_str());
+    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_NEWEXPERIMENT_FILE).c_str());
+}
+
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
     for (const auto & entry : filesystem::directory_iterator(remoteSignalsToRpiFolder())){
@@ -92,10 +97,7 @@ void startExperiment(){
     deleteFlags();
 }
 
-void deleteFlags(){
-    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_GO_FILE).c_str());
-    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_NEWEXPERIMENT_FILE).c_str());
-}
+
 
 void readFile(string path, void * data, int bytes){
     ifstream fl(path);  
