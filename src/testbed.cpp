@@ -158,7 +158,7 @@ bool directoryCheck(){
     paths_needed[2] = localFrontendFolder();
 
     for (int i = 0; i < 3; i++){
-        string command = "mkdir -p" + paths_needed[i];
+        string command = "mkdir -p " + paths_needed[i];
         system(command.c_str());
     }
 

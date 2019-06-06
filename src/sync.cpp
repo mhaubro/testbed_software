@@ -63,7 +63,7 @@ void deleteFlags(){
 
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
-    for (const auto & entry : filesystem::directory_iterator(remoteSignalsToRpiFolder())){
+    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_FROM_RPI_FOLDER)){
         if (!entry.is_directory()){
             continue;
         }
@@ -83,7 +83,7 @@ void startExperiment(){
     /*Resetting logs*/
     resetLogs();
     /*Tell all to start again*/
-    for (const auto & entry : filesystem::directory_iterator(remoteSignalsToRpiFolder())){
+    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_TO_RPI_FOLDER)){
         if (!entry.is_directory()){
             continue;
         }
