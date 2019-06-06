@@ -1,6 +1,7 @@
 #include "testbed.h"
 #include "getmac.h"
 #include "execcmd.h"
+#include "auxiliary.h"
 #include <iostream>
 #include <string>
 #include <sys/types.h>
@@ -17,71 +18,69 @@
 
 using namespace std;
 
-//We assume the mac should only be found once.
+//We assume the mac should only be found once. Also, this is the pure mac, without any slashes.
 char mac[18];
 
-/*Gets my directory*/
-string getMyDirectory(){
-    string homedir = getenv("HOME");
-    homedir += "/testbed/" + string(mac);
-    return homedir;
-}
-
-/*Gets the full path to the reset-file*/
-string resetFilePath(){
-    string dir = getMyDirectory() + "/signals" + SIGNAL_RESET_FILE;
-    return dir;
-}
-
-string flashFileFolder(){
-    string path = getMyDirectory() + "/flash";
+string localBackendFolder(){
+    string path = getMyDirectory() + "/backend";
     return path;
 }
-string signalFileFolder(){
-    string path = getMyDirectory() + "/signals";
+string localFrontendFolder(){
+    string path = getMyDirectory() + "/frontend";
     return path;
 }
-
-string flashSignalPath(){
-    string path = signalFileFolder() + SIGNAL_FLASH_FILE;
-    /*Find any file in this folder*/
+string localOutputFolder(){
+    string path = getMyDirectory() + "/output";
+    return path;
+}
+string localFlashFileFolder(){
+    string path = localFrontendFolder() + FLASHFILEFOLDER;
+    return path;
+}
+string localGoFlagPath(){
+    string path = localFrontendFolder() + SIGNAL_GO_FILE;
     return path;
 }
 
-string logFileFolder(){
-    string path = getMyDirectory() + "/logs";
+string localNewExperimentFlagPath(){
+    string path = localFrontendFolder() + SIGNAL_NEWEXPERIMENT_FILE;
     return path;
 }
 
-/*We upload liveness, so it's placed in logs*/
-string liveSignalPath(){
-    string path = logFileFolder() + SIGNAL_LIVE_FILE;
-    /*Find any file in this folder*/
+string myremoteSignalsFromRpiFolder(){
+    string path = remoteSignalsFromRpiFolder() + "/" + mac;
+    return path;
+}
+string myremoteSignalsToRpiFolder(){
+    string path = remoteSignalsToRpiFolder() + "/" + mac;
+    return path;
+}
+string myRemoteOutputFolder(){
+    string path = remoteOutputFolder() + "/" + mac;
     return path;
 }
 
-
-
-string GetMyLogFolder(){
-    string path = logFileFolder() + "/log0";
-    string cmd = "mkdir -p " + path;
-    system(cmd.c_str());
+string myRemoteNewExperimentFlagPath(){
+    string path = myremoteSignalsToRpiFolder() + SIGNAL_NEWEXPERIMENT_FILE;
     return path;
 }
-
-void deleteFile(string path){
-    string command = "rm " + path;
-    system(command.c_str());
+string myRemoteGoFlagPath(){
+    string path = myremoteSignalsToRpiFolder() + SIGNAL_GO_FILE;
+    return path;
+}
+string myRemoteLiveSignalPath(){
+    string path = myremoteSignalsFromRpiFolder() + SIGNAL_LIVE_FILE;
+    return path;
+}
+string myRemoteStopSignalPath(){
+    string path = myremoteSignalsFromRpiFolder() + SIGNAL_STOPPED_FILE;
+    return path;    
 }
 
-void rcloneCommand(string cmd){
-    system(string("rclone " + cmd).c_str());
+/*If the machine is rebooted or this program restarted, we check if there is something already, to not overwrite old data*/
+void checkForExistingLogs(){
+/*Not implemented yet*/
 }
-
-void deleteRemote(string path){
-    rcloneCommand(string("delete ") + RCLONE_REMOTE + REMOTEROOT + "/" + string(mac) + path);
-}
-
 
 /*Gets array with grabserial process ids*/
 vector<int> getGrabSerialProcessArray(){
@@ -114,7 +113,7 @@ void terminateGrabSerial(){
 void startGrabSerial(){
     cout << "start_grab" << endl;
     system("pkill grabserial");
-    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder() + "/logACM0.txt"  + " -S -T &").c_str());
+    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t > " + localOutputFolder() + "/log.txt"  + " -S -T &").c_str());
     //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
 }
 
@@ -124,99 +123,66 @@ void resetGrabSerial(){
     startGrabSerial();    
 }
 
-
-
-bool folderExists(string path){
-
-    struct stat info;
-
-    if(stat( &path[0], &info ) != 0)
-        return false;
-    else if(info.st_mode & S_IFDIR)
-        return true;
-    else
-        return false;
-}
-
-bool fileExists(string path){
-
-    struct stat info;
-
-    if(stat( &path[0], &info ) != 0)
-        return false;
-    else if(info.st_mode & S_IFREG)
-        return true;
-    else
-        return false;
-}
-
-/*Runs the system command to pipe to output. Is blocking until the thread is terminated somehow or grabserial is terminated*/
-void outputSerial(string serial_device){
-    string command = "grabserial -v -d " + serial_device + " -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder(); 
-}
-
-void publishMac(){
-    string localpath = getMyDirectory();
-    string remotepath = REMOTEROOT + "/" + string(mac);
-    /*Ensure testbed-folder is online*/
-    system(string("rclone mkdir " + RCLONE_REMOTE + REMOTEROOT).c_str());
-    /*Publish our mac online*/
-    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+void publishMe(){
+    /*Sanity checks*/
+    rcloneCommand("mkdir " + REMOTEROOT);
+    rcloneCommand("mkdir " + REMOTEROOT + EXPERIMENTFOLDER);
+    rcloneCommand("mkdir " + myRemoteOutputFolder());
+    rcloneCommand("mkdir " + REMOTEROOT + FRONTENDSIGNALFOLDER);
+    rcloneCommand("mkdir " + REMOTEROOT + BACKENDSIGNALFOLDER);
+    rcloneCommand("mkdir " + myremoteSignalsFromRpiFolder());
+    rcloneCommand("mkdir " + myremoteSignalsToRpiFolder());
 }
 
 void uploadData(){
     cout << "Uploading\n";
-    publishMac();
-    string localpath = getMyDirectory() + string("/logs");
-    string remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
-    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+    publishMe();
+    /*Actual uploads*/
+    string localpath = localOutputFolder();
+    string remotepath = remoteOutputFolder();
+    rcloneCommand("copy " + localpath + remotepath + " --create-empty-src-dirs");
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
-    localpath = liveSignalPath();
-    remotepath = REMOTEROOT + "/" + string(mac) + "/logs";
-    system(string("touch " + liveSignalPath()).c_str());
-    system(string("rclone copy " + localpath + RCLONE_REMOTE + remotepath + " --create-empty-src-dirs").c_str());
+    rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
 
 
 
-/*Checks if we have dropbox. Creates other necessary directories if needed*/
+/*Creates necessary directories if needed*/
 bool directoryCheck(){
     string mydir = getMyDirectory();
 
     string paths_needed[3 + LOGCOUNT];
 
-    paths_needed[0] = logFileFolder();
-    paths_needed[1] = flashFileFolder();
-    paths_needed[2] = signalFileFolder();
-    /*Create log folders*/
-    for (int i = 0; i < LOGCOUNT; i++){
-        paths_needed[3 + i] = logFileFolder() + "/log" + to_string(i);
-    }
+    /*We need one folder for storing output, one for downloading auxiliary things, and one for upload*/
+    paths_needed[0] = localOutputFolder();
+    paths_needed[1] = localBackendFolder();
+    paths_needed[2] = localFrontendFolder();
 
-    for (int i = 0; i < (3 + LOGCOUNT); i++){
-        string command = "mkdir -p " + paths_needed[i];
+    for (int i = 0; i < 3; i++){
+        string command = "mkdir -p" + paths_needed[i];
         system(command.c_str());
     }
 
     /*Ensure that we are very much online*/
-    publishMac();
+    publishMe();
 
     return true;
 }
 
 /*Restes logs, moves log1 to log2, log2 to log3 etc*/
-void resetLogs(){
+/*void resetLogs(){
     string deleteLastFolder = "rm -rf " + logFileFolder() + "/log" + to_string(LOGCOUNT - 1);
     system(deleteLastFolder.c_str());
 
-    for (int i = LOGCOUNT - 2; i >= 0; i--){
+    for (int i = LOGCOUNT - 2; i >= 0; i--){*/
         /*Rename folder log_i to log_i+1*/
-        string cmd = "mv " + logFileFolder() + "/log" + to_string(i) + " " + logFileFolder() + "/log" + to_string(i + 1);
+/*        string cmd = "mv " + logFileFolder() + "/log" + to_string(i) + " " + logFileFolder() + "/log" + to_string(i + 1);
         system(cmd.c_str());
     }
     string deleteContentOfFirstFolder = "rm -rf " + logFileFolder() + "/log" + to_string(1) + "/*";
     system(deleteContentOfFirstFolder.c_str());
 }
+*/
 
 bool checkGrabSerialAlive(){
     /*If we have less than two processes running it's no good*/
@@ -243,51 +209,50 @@ void resetMCU(){
     system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run\"").c_str());
 }
 
-void flashMCU(){
+void stopMCU(){
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"reset halt\"").c_str());
+}
+
+void flashAndStopMCU(){
+
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
-    for (const auto & entry : filesystem::directory_iterator(flashFileFolder())){
+    for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
         system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
-        cout << "flashed file" << endl;
-        deleteFile(entry.path());
-        deleteRemote(entry.path());
     }
+    /*Delete all files in folder*/
+    system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
+    /*Delete all files online*/
+    deleteRemote(myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
+
+    stopMCU();
 }
 
-bool flashFlag(){
-
-    if (fileExists(flashSignalPath())){
-        deleteFile(flashSignalPath());
-        deleteRemote(std::string("/signals") + SIGNAL_FLASH_FILE);
-        /*Delete file*/
+bool newExperimentFlag(){
+    if (fileExists(localNewExperimentFlagPath())){
+        deleteFile(localNewExperimentFlagPath());
+        deleteRemote(myRemoteNewExperimentFlagPath());
         return true;
     }
     return false;
 }
 
-bool resetFlag(){
-    if (fileExists(resetFilePath())){
-        deleteFile(resetFilePath());
-        deleteRemote(std::string("/signals") + SIGNAL_RESET_FILE);
-
+bool goFlag(){
+    if (fileExists(localGoFlagPath())){
+        deleteFile(localGoFlagPath());
+        deleteRemote(myRemoteGoFlagPath());
         return true;
     }
     return false;
 }
-
 
 /*flash and signals*/
 
 void downloadData(){
     cout << "Downloading\n";
-    string localpath = getMyDirectory() + string("/signals");
-    string remotepath = REMOTEROOT + "/" + string(mac) + string("/signals");
-    system(string("rclone copy " + RCLONE_REMOTE + remotepath + " " + localpath).c_str());
-
-    localpath = getMyDirectory() + string("/flash");
-    remotepath = string(REMOTEROOT) + "/" + string(mac) + string("/flash");
-    system(string("rclone copy " + RCLONE_REMOTE + remotepath + " " + localpath).c_str());
+    string localpath = localFrontendFolder();
+    string remotepath = remoteSignalsToRpiFolder();
+    rcloneCommand("copy " + remotepath + " " + localpath);
 }
-
 
 void programLoop(){
     auto start = chrono::steady_clock::now();
@@ -300,55 +265,54 @@ void programLoop(){
         }
         cout << "uploading\n";
         uploadData();
-        if (resetFlag()){
-            cout << "Resetting" << endl;
-            terminateGrabSerial();
-            resetLogs();
-            startGrabSerial();
-            resetMCU();
-            start = chrono::steady_clock::now();
-        } 
-        if (flashFlag()){
-            cout << "Flashing" << endl;
-            terminateGrabSerial();
-            resetLogs();
-            flashMCU();
-            startGrabSerial();
-            resetMCU();
-            start = chrono::steady_clock::now();
-
-        }
 
         cout << "downloading\n";
         downloadData();
-        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() > 60*IDLE_AFTER_MINUTES){
-            this_thread::sleep_for(chrono::seconds(IDLE_WAITTIME));
-        } else {
-            this_thread::sleep_for(chrono::seconds(WAITTIME));
+
+        if (newExperimentFlag()){
+            /*We pause until we get a go-flag, at which we reset*/
+            terminateGrabSerial();
+            uploadData();
+            flashAndStopMCU();
+            do {
+                this_thread::sleep_for(chrono::seconds(1));
+                downloadData();
+                uploadData();/*Ensures we tell the front-end we're still alive*/
+            } while (!goFlag());
+            startGrabSerial();
+            resetMCU();
+            start = chrono::steady_clock::now();
         }
+
+        /*We can spam the servers as much as we want on eduroam, so we upload often*/
+        this_thread::sleep_for(chrono::seconds(WAITTIME));
     }
 }
 
-
-
-
-
-
-
-
 int main(){
 
-    this_thread::sleep_for(chrono::seconds(WAITTIME));
+    //this_thread::sleep_for(chrono::seconds(WAITTIME));
 
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
-    //uploadData(); /*We'll just show we're online*/    
-    resetLogs();
+    uploadData(); /*We'll just show we're online*/    
+    checkForExistingLogs();
     if (checkForDevice()){
-        resetMCU();
-    }                
-
+         resetMCU();
+    }      
+    /*//For testing          
+    cout << myremoteSignalsFromRpiFolder() << endl;
+    cout << localBackendFolder() << endl;
+    cout << myRemoteOutputFolder() << endl;
+    cout << localOutputFolder() << endl;
+    cout << myRemoteGoFlagPath() << endl;
+    cout << localGoFlagPath() << endl;
+    cout << myRemoteNewExperimentFlagPath() << endl;
+    cout << localNewExperimentFlagPath() << endl;
+    cout << myRemoteLiveSignalPath() << endl;
+    cout << localFlashFileFolder() << endl;
+    */
     programLoop();
 
     //cout <<  getMyDirectory() << endl;
