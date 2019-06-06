@@ -176,7 +176,7 @@ void removeInactive(){
 int main(){
 
     for (int i = 0; i < LOGCOUNT; i++){
-        string command = "mkdir -p" + logPath() + to_string(i);
+        string command = "mkdir -p " + logPath() + to_string(i);
         system(command.c_str());
     }
 

@@ -23,7 +23,7 @@ OBJECT_DIR = $(SCDIR)/objects
 #DIRECTORIES = $(sort $(dir $(wildcard $(SOURCEDIR)/*/)))
 
 
-$(OBJECT_DIR)/%.cpp.o: $(SCDIR)/%.cpp
+$(OBJECT_DIR)/%.cpp.o: $(SOURCEDIR)/%.cpp
 	mkdir -p $(@D)
 	$(CPP) $(CPP_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
@@ -37,17 +37,20 @@ OBJS = $(foreach d, $(CPPSHORT), $(OBJECT_DIR)$(d).o)
 
 #OBJ_SC = $(foreach d, $(basename $(CPP_FILES)), $(d).cpp.o)
 
-testbed_process: $(OBJS)
+testbed_process: $(OBJECT_DIR)/testbed.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o $(OBJECT_DIR)/execcmd.cpp.o $(OBJECT_DIR)/getmac.cpp.o
 	$(CPP) -o $(BINDIR)/testbed_process $^ $(CPP_FLAGS)
 
 EXECUTABLE += $(Root_Directory)/testbed_process
 
+sync_process: $(OBJECT_DIR)/sync.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o
+	$(CPP) -o $(BINDIR)/sync_process $^ $(CPP_FLAGS)
+
 #-I marks that headers can be found in a directory
 INCLUDE_TEMP += $(SCDIR)/include
 
-all: testbed_process
+all: testbed_process sync_process
 
-default: testbed_process
+default: testbed_process sync_process
 
 
 #Takes all of include_temp, and puts on -I flag.
