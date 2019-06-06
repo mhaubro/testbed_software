@@ -113,13 +113,12 @@ void terminateGrabSerial(){
 void startGrabSerial(){
     cout << "start_grab" << endl;
     system("pkill grabserial");
-    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t > " + localOutputFolder() + "/log.txt"  + " -S -T &").c_str());
+    system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/log.txt"  + " -S -T &").c_str());
     //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t > " + GetMyLogFolder() + "/logACM1.txt"  + " &").c_str());
 }
 
 /*Terminate all instances and start new ones*/
 void resetGrabSerial(){
-    terminateGrabSerial();
     startGrabSerial();    
 }
 
@@ -139,8 +138,8 @@ void uploadData(){
     publishMe();
     /*Actual uploads*/
     string localpath = localOutputFolder();
-    string remotepath = remoteOutputFolder();
-    rcloneCommand("copy " + localpath + remotepath + " --create-empty-src-dirs");
+    string remotepath = myRemoteOutputFolder();
+    rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
@@ -296,11 +295,12 @@ int main(){
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();
-    uploadData(); /*We'll just show we're online*/    
+    resetGrabSerial();    
     checkForExistingLogs();
+    uploadData(); /*We'll just show we're online*/    
     if (checkForDevice()){
          resetMCU();
-    }      
+    }
     /*//For testing          
     cout << myremoteSignalsFromRpiFolder() << endl;
     cout << localBackendFolder() << endl;

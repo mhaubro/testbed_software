@@ -40,7 +40,7 @@ string remoteOutputFolder();
 #define BACKENDSIGNALFOLDER std::string("/signalsFromRpis")
 
 #define RCLONE_REMOTE std::string(" DTUHPC:")
-#define REMOTEROOT RCLONE_REMOTE + std::string("~/testbed")
+#define REMOTEROOT RCLONE_REMOTE + std::string("testbed")
 
 bool folderExists(string path);
 bool fileExists(string path);
