@@ -76,6 +76,11 @@ string myRemoteStopSignalPath(){
     string path = myremoteSignalsFromRpiFolder() + SIGNAL_STOPPED_FILE;
     return path;    
 }
+string myremoteFlashFileFolder(){
+    string path = myremoteSignalsToRpiFolder() + FLASHFILEFOLDER;
+    return path;    
+}
+
 
 /*If the machine is rebooted or this program restarted, we check if there is something already, to not overwrite old data*/
 void checkForExistingLogs(){
@@ -114,7 +119,7 @@ void startGrabSerial(){
     cout << "start_grab" << endl;
     system("pkill grabserial");
     system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/logacm0.txt"  + " -S -T &").c_str());
-    system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/logacm1.txt"  + " -S -T &").c_str());
+    //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/logacm1.txt"  + " -S -T &").c_str());
 }
 
 /*Terminate all instances and start new ones*/
@@ -131,6 +136,7 @@ void publishMe(){
     rcloneCommand("mkdir " + remoteSignalsToRpiFolder());
     rcloneCommand("mkdir " + myremoteSignalsFromRpiFolder());
     rcloneCommand("mkdir " + myremoteSignalsToRpiFolder());
+    rcloneCommand("mkdir " + myremoteFlashFileFolder());
 }
 
 void uploadData(){
