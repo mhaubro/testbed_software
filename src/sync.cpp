@@ -127,8 +127,8 @@ void removeInactive(){
 
     vector<string> pathsToDelete;
 
-    for (const auto & entry : filesystem::directory_iterator(remoteSignalsFromRpiFolder())){
-        string macOfEntry = entry.path().string().substr(remoteSignalsFromRpiFolder().length() , string::npos);
+    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_FROM_RPI_FOLDER)){
+        string macOfEntry = entry.path().string().substr((getMyDirectory() + SIGNAL_FROM_RPI_FOLDER).length() , string::npos);
         /*signals of all subdirectories, sent up from different rpis*/
         string liveness = string(entry.path()) + SIGNAL_LIVE_FILE;
         string warning = string(entry.path()) + WARNING_FILE_NAME;            

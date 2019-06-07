@@ -2,8 +2,8 @@
 #define SYNC_H
 
 #define CURRENT_EXPERIMENT_FOLDER string("/output")
-#define SIGNAL_FROM_RPI_FOLDER string("/torpi")
-#define SIGNAL_TO_RPI_FOLDER string("/fromrpi")
+#define SIGNAL_FROM_RPI_FOLDER string("/fromrpi")
+#define SIGNAL_TO_RPI_FOLDER string("/torpi")
 
 #define LOGCOUNT 10
 #define LOGFOLDERNAME string("/log")
