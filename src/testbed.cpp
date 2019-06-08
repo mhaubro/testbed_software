@@ -191,7 +191,7 @@ bool directoryCheck(){
 
 bool checkGrabSerialAlive(){
     /*If we have less than two processes running it's no good*/
-    return (getGrabSerialProcessArray().size() == 2);
+    return (getGrabSerialProcessArray().size() == 1);
 }
 
 
