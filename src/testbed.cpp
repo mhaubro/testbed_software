@@ -283,7 +283,8 @@ void programLoop(){
             this_thread::sleep_for(chrono::seconds(1));
             /*We delete everything in our local folder and remote*/
             deleteRemote(myRemoteOutputFolder());
-            deleteFolder(localOutputFolder());
+            /*Delete contents of my folder*/
+            deleteFolder(localOutputFolder() + "/*");
             /*We start recording again*/
             startGrabSerial();
             resetMCU();
