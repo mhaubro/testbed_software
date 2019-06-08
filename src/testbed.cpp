@@ -21,12 +21,12 @@ using namespace std;
 //We assume the mac should only be found once. Also, this is the pure mac, without any slashes.
 char mac[18];
 
-string localBackendFolder(){
-    string path = getMyDirectory() + "/backend";
+string localSigFromRpiFolder(){
+    string path = getMyDirectory() + "/SigFromRpi";
     return path;
 }
-string localFrontendFolder(){
-    string path = getMyDirectory() + "/frontend";
+string localSigToRpiFolder(){
+    string path = getMyDirectory() + "/SigToRpi";
     return path;
 }
 string localOutputFolder(){
@@ -34,16 +34,16 @@ string localOutputFolder(){
     return path;
 }
 string localFlashFileFolder(){
-    string path = localFrontendFolder() + FLASHFILEFOLDER;
+    string path = localSigToRpiFolder() + FLASHFILEFOLDER;
     return path;
 }
 string localGoFlagPath(){
-    string path = localFrontendFolder() + SIGNAL_GO_FILE;
+    string path = localSigToRpiFolder() + SIGNAL_GO_FILE;
     return path;
 }
 
 string localNewExperimentFlagPath(){
-    string path = localFrontendFolder() + SIGNAL_NEWEXPERIMENT_FILE;
+    string path = localSigToRpiFolder() + SIGNAL_NEWEXPERIMENT_FILE;
     return path;
 }
 
@@ -160,8 +160,8 @@ bool directoryCheck(){
 
     /*We need one folder for storing output, one for downloading auxiliary things, and one for upload*/
     paths_needed[0] = localOutputFolder();
-    paths_needed[1] = localBackendFolder();
-    paths_needed[2] = localFrontendFolder();
+    paths_needed[1] = localSigFromRpiFolder();
+    paths_needed[2] = localSigToRpiFolder();
 
     for (int i = 0; i < 3; i++){
         string command = "mkdir -p " + paths_needed[i];
@@ -254,8 +254,8 @@ bool goFlag(){
 
 void downloadData(){
     cout << "Downloading\n";
-    string localpath = localFrontendFolder();
-    string remotepath = remoteSignalsToRpiFolder();
+    string localpath = localSigToRpiFolder();
+    string remotepath = myremoteSignalsToRpiFolder();
     rcloneCommand("copy " + remotepath + " " + localpath);
 }
 
@@ -310,7 +310,7 @@ int main(){
     }
     /*//For testing          
     cout << myremoteSignalsFromRpiFolder() << endl;
-    cout << localBackendFolder() << endl;
+    cout << localSigFromRpiFolder() << endl;
     cout << myRemoteOutputFolder() << endl;
     cout << localOutputFolder() << endl;
     cout << myRemoteGoFlagPath() << endl;

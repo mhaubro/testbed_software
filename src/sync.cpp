@@ -74,8 +74,10 @@ void resetLogs(){
     for (const auto & entry : filesystem::directory_iterator(experimentFolder())){
         string signalsPath = regex_replace(string(entry.path()), regex(experimentFolder()), signalsFromRpiFolder());
         if (!folderExists(signalsPath)){
+            cout << "Folder missing\n";
+            cout << "deleting " << regex_replace(string(entry.path()), regex(experimentFolder()), remoteOutputFolder()) << endl;
             /*Regex replaces path until mac address local with path until mac on the remote*/
-            deleteRemote(regex_replace(string(entry.path()), regex(experimentFolder()), remoteOutputFolder()));
+            purgeRemote(regex_replace(string(entry.path()), regex(experimentFolder()), remoteOutputFolder()));
         }
     }
 
