@@ -23,6 +23,7 @@ void rcloneCommand(string cmd);
 void deleteRemote(string path);
 void purgeRemote(string path);
 void deleteFile(string path);
+void deleteFolder(string path);
 
 string remoteSignalsFromRpiFolder();
 string remoteSignalsToRpiFolder();

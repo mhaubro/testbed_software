@@ -279,11 +279,12 @@ void programLoop(){
             terminateGrabSerial();
             uploadData();
             flashAndStopMCU();
-            do {
-                this_thread::sleep_for(chrono::seconds(1));
-                downloadData();
-                uploadData();/*Ensures we tell the front-end we're still alive*/
-            } while (!goFlag());
+            /*We wait for mcu flashing*/
+            this_thread::sleep_for(chrono::seconds(1));
+            /*We delete everything in our local folder and remote*/
+            deleteRemote(myRemoteOutputFolder());
+            deleteFolder(localOutputFolder());
+            /*We start recording again*/
             startGrabSerial();
             resetMCU();
             start = chrono::steady_clock::now();

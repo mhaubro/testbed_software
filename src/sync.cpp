@@ -18,20 +18,32 @@
 /*More or less all setup has been done by the rpis*/
 using namespace std;
 
+string experimentFolder(){
+    return getMyDirectory() + CURRENT_EXPERIMENT_FOLDER;
+}
+
+string signalsFromRpiFolder(){
+    return getMyDirectory() + SIGNAL_FROM_RPI_FOLDER;
+}
+
+string signalsToRpiFolder(){
+    return getMyDirectory() + SIGNAL_TO_RPI_FOLDER;
+}
+
 void downloadData(){
     /*Data*/
-    string localpath = getMyDirectory() + CURRENT_EXPERIMENT_FOLDER;
+    string localpath = experimentFolder();
     string remotepath = remoteOutputFolder();
     rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
 
     /*Signals*/
-    localpath = getMyDirectory() + SIGNAL_FROM_RPI_FOLDER;
+    localpath = signalsFromRpiFolder();
     remotepath = remoteSignalsFromRpiFolder();
     rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
 }
 
 void uploadData(){
-    string localpath = getMyDirectory() + SIGNAL_TO_RPI_FOLDER;
+    string localpath = signalsToRpiFolder();
     string remotepath = remoteSignalsToRpiFolder();
     rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
 }
@@ -76,25 +88,20 @@ void startExperiment(){
     uploadData();
     /*We only want to upload once, to ensure no confusion on the rpis*/
     deleteFlags();
-    /*Let's wait for everyone to get this message*/
-    this_thread::sleep_for(chrono::seconds(10));
-    /*Download one last time*/
-    downloadData();
     /*Resetting logs*/
     resetLogs();
     /*Tell all to start again*/
-    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_TO_RPI_FOLDER)){
-        if (!entry.is_directory()){
-            continue;
-        }
-        /*Uploads signals of all subdirectories*/
-        string path = string(entry.path());
-        /*Indicate we want to do a new experiment*/
-        system(string(("touch ") + string(entry.path()) + SIGNAL_GO_FILE).c_str());
-    }       
-    uploadData();
+    // for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_TO_RPI_FOLDER)){
+    //     if (!entry.is_directory()){
+    //         continue;
+    //     }
+    //     /*Uploads signals of all subdirectories*/
+    //     string path = string(entry.path());
+    //     /*Indicate we want to do a new experiment*/
+    //     system(string(("touch ") + string(entry.path()) + SIGNAL_GO_FILE).c_str());
+    // }       
+    // uploadData();
     /*We delete the flags again, to get rid of the go-flags*/
-    deleteFlags();
 }
 
 
@@ -166,11 +173,10 @@ void removeInactive(){
     for (int i = 0; i < pathsToDelete.size(); i++){
         string cmd = string("rm -rf ") + pathsToDelete[i];/*Delete everything in folder*/
         system(cmd.c_str());
-
     }
 
     /*We remove the live-signals, but anticipate to see them again*/
-    system(string("rm -f " + remoteSignalsFromRpiFolder() + "/*" + SIGNAL_LIVE_FILE).c_str());
+    system(string("rm -f " + signalsFromRpiFolder() + "/*" + SIGNAL_LIVE_FILE).c_str());
 }
 
 int main(){
@@ -184,6 +190,7 @@ int main(){
         /*Download*/
         cout << "Download\n";
         downloadData();
+        removeInactive();
 
         this_thread::sleep_for(chrono::seconds(15));
 
@@ -194,7 +201,6 @@ int main(){
             startExperiment();
         }
         
-        removeInactive();
     }        
     return 0;
 }

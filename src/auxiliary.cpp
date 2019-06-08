@@ -24,6 +24,12 @@ void rcloneCommand(string cmd){
 void deleteRemote(string path){
     rcloneCommand(string("delete ") + path);
 }
+
+void deleteFolder(string path){
+    string command = "rm -rf " + path;
+    system(command.c_str());
+}
+
 void purgeRemote(string path){
     rcloneCommand(string("purge ") + path);    
 }
