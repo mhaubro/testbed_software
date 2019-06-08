@@ -211,7 +211,7 @@ bool checkForDevice(){
 }
 
 void resetMCU(){
-    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"reset run\"").c_str());
 }
 
 void stopMCU(){
