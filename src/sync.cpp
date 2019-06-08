@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <time.h>     
 #include <fstream>  
+#include <regex>
 
 #include "auxiliary.h"
 #include "sync.h"
@@ -42,6 +43,10 @@ void downloadData(){
     rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
 }
 
+void deleteFlashFiles(){
+    system(string("rm -f " + signalsToRpiFolder() + "/*" + FLASHFILEFOLDER + "/*").c_str());
+}
+
 void uploadData(){
     string localpath = signalsToRpiFolder();
     string remotepath = remoteSignalsToRpiFolder();
@@ -63,19 +68,31 @@ void resetLogs(){
         string cmd = "mv " + logPath() + to_string(i) + " " + logPath() + to_string(i + 1);
         system(cmd.c_str());
     }
+
+    vector<string> pathsToDelete;
+    /*If an output-folder is not 'alive', in our signalsFromRpis, we destroy it*/
+    for (const auto & entry : filesystem::directory_iterator(experimentFolder())){
+        string signalsPath = regex_replace(string(entry.path()), regex(experimentFolder()), signalsFromRpiFolder());
+        if (!folderExists(signalsPath)){
+            /*Regex replaces path until mac address local with path until mac on the remote*/
+            deleteRemote(regex_replace(string(entry.path()), regex(experimentFolder()), remoteOutputFolder()));
+        }
+    }
+
     /*We store the current experiment*/
     string cmd = "mv " + getMyDirectory() + CURRENT_EXPERIMENT_FOLDER + " " + logPath() + to_string(0);
     system(cmd.c_str());
 }
 
 void deleteFlags(){
-    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_GO_FILE).c_str());
-    system(string("rm -f " + remoteSignalsToRpiFolder() + "/*" + SIGNAL_NEWEXPERIMENT_FILE).c_str());
+    system(string("rm -f " + signalsToRpiFolder() + "/*" + SIGNAL_GO_FILE).c_str());
+    system(string("rm -f " + signalsToRpiFolder() + "/*" + SIGNAL_NEWEXPERIMENT_FILE).c_str());
+
 }
 
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
-    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_FROM_RPI_FOLDER)){
+    for (const auto & entry : filesystem::directory_iterator(signalsToRpiFolder())){
         if (!entry.is_directory()){
             continue;
         }
@@ -86,6 +103,7 @@ void startExperiment(){
     }
     downloadData();
     uploadData();
+    deleteFlashFiles();
     /*We only want to upload once, to ensure no confusion on the rpis*/
     deleteFlags();
     /*Resetting logs*/
@@ -134,8 +152,8 @@ void removeInactive(){
 
     vector<string> pathsToDelete;
 
-    for (const auto & entry : filesystem::directory_iterator(getMyDirectory() + SIGNAL_FROM_RPI_FOLDER)){
-        string macOfEntry = entry.path().string().substr((getMyDirectory() + SIGNAL_FROM_RPI_FOLDER).length() , string::npos);
+    for (const auto & entry : filesystem::directory_iterator(signalsFromRpiFolder())){
+        string macOfEntry = entry.path().string().substr((signalsFromRpiFolder()).length() , string::npos);
         /*signals of all subdirectories, sent up from different rpis*/
         string liveness = string(entry.path()) + SIGNAL_LIVE_FILE;
         string warning = string(entry.path()) + WARNING_FILE_NAME;            
@@ -167,6 +185,10 @@ void removeInactive(){
             /*Prior part is base path, entry.path()... is '/mac address. We just delete everything inside the folder*/
             string remotePathFromRoot = remoteSignalsFromRpiFolder() + macOfEntry;
             deleteRemote(remotePathFromRoot);
+
+            /*We ensure we have a upload-folder. Full path is found by substituting download-root with upload-root. We need somewhere to dump flashes*/
+            string uploadFolder = regex_replace(string(entry.path()), regex(signalsFromRpiFolder()), signalsToRpiFolder());
+            system(string("mkdir -p " + uploadFolder + FLASHFILEFOLDER).c_str());
         }
     }       
 
@@ -179,12 +201,21 @@ void removeInactive(){
     system(string("rm -f " + signalsFromRpiFolder() + "/*" + SIGNAL_LIVE_FILE).c_str());
 }
 
+void initialDownload(){
+    /*Signals*/
+    string localpath = signalsToRpiFolder();
+    string remotepath = remoteSignalsToRpiFolder();
+    rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
+}
+
 int main(){
 
     for (int i = 0; i < LOGCOUNT; i++){
         string command = "mkdir -p " + logPath() + to_string(i);
         system(command.c_str());
     }
+
+    initialDownload();
 
     while(1){
         /*Download*/
