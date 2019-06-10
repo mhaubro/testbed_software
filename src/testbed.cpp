@@ -292,7 +292,7 @@ void programLoop(){
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
-        this_thread::sleep_for(chrono::seconds(WAITTIME));
+        this_thread::sleep_for(chrono::seconds(WAITTIME)); 
     }
 }
 
