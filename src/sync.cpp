@@ -104,6 +104,7 @@ void startExperiment(){
         system(string(("touch ") + string(entry.path()) + SIGNAL_NEWEXPERIMENT_FILE).c_str());
     }
     downloadData();
+    this_thread::sleep_for(chrono::seconds(1));
     uploadData();
     deleteFlashFiles();
     /*We only want to upload once, to ensure no confusion on the rpis*/
