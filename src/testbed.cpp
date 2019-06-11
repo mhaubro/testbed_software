@@ -147,7 +147,7 @@ void uploadData(){
     publishMe();
 
     /*Copy data such that rclone doesn't try to upload stuff being edited */
-    system(string("cp -a " + localOutputFolder() + " " + localOutputUploadFolder() + "/").c_str());
+    system(string("cp -a " + localOutputFolder() + "/* " + localOutputUploadFolder() + "/").c_str());
     /*Actual uploads*/
     string localpath = localOutputUploadFolder();
     string remotepath = myRemoteOutputFolder();
