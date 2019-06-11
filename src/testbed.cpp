@@ -30,6 +30,10 @@ string localSigToRpiFolder(){
     return path;
 }
 string localOutputFolder(){
+    string path = getMyDirectory() + "/tempoutput";
+    return path;
+}
+string localOutputUploadFolder(){
     string path = getMyDirectory() + "/output";
     return path;
 }
@@ -141,8 +145,11 @@ void publishMe(){
 void uploadData(){
     cout << "Uploading\n";
     publishMe();
+
+    /*Copy data such that rclone doesn't try to upload stuff being edited */
+    system(string("cp -a " + localOutputFolder() + "/ " + localOutputUploadFolder() + "/").c_str());
     /*Actual uploads*/
-    string localpath = localOutputFolder();
+    string localpath = localOutputUploadFolder();
     string remotepath = myRemoteOutputFolder();
     rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
@@ -159,10 +166,11 @@ bool directoryCheck(){
 
     /*We need one folder for storing output, one for downloading auxiliary things, and one for upload*/
     paths_needed[0] = localOutputFolder();
-    paths_needed[1] = localSigFromRpiFolder();
-    paths_needed[2] = localSigToRpiFolder();
+    paths_needed[1] = localOutputUploadFolder();
+    paths_needed[2] = localSigFromRpiFolder();
+    paths_needed[3] = localSigToRpiFolder();
 
-    for (int i = 0; i < 3; i++){
+    for (int i = 0; i < 4; i++){
         string command = "mkdir -p " + paths_needed[i];
         system(command.c_str());
     }

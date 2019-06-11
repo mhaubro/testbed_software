@@ -64,8 +64,12 @@ string startExperimentFile(){
 }
 
 void resetLogs(){
+    string cmd = "rm -rf " + logPath() + to_string(LOGCOUNT-1);
+    system(cmd.c_str());
+    
+
     for (int i = LOGCOUNT - 2; i >= 0; i--){
-        string cmd = "mv " + logPath() + to_string(i) + " " + logPath() + to_string(i + 1);
+        cmd = "mv " + logPath() + to_string(i) + " " + logPath() + to_string(i + 1);
         system(cmd.c_str());
     }
 
@@ -82,7 +86,7 @@ void resetLogs(){
     }
 
     /*We store the current experiment*/
-    string cmd = "mv " + getMyDirectory() + CURRENT_EXPERIMENT_FOLDER + " " + logPath() + to_string(0);
+    cmd = "mv " + getMyDirectory() + CURRENT_EXPERIMENT_FOLDER + " " + logPath() + to_string(0);
     system(cmd.c_str());
 }
 
