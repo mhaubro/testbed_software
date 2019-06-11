@@ -7,6 +7,7 @@
 
 #define LOGCOUNT 10
 #define LOGFOLDERNAME string("/log")
+#define FLASHFOLDERNAME string("/flash")
 #define START_EXPERIMENT_FILE string("/start")
 #define WARNING_FILE_NAME string("/warning")
 

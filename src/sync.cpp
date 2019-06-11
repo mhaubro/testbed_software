@@ -31,6 +31,10 @@ string signalsToRpiFolder(){
     return getMyDirectory() + SIGNAL_TO_RPI_FOLDER;
 }
 
+string flashFilesToRpiFolder(){
+    return getMyDirectory() + FLASHFOLDERNAME;
+}
+
 void downloadData(){
     /*Data*/
     string localpath = experimentFolder();
@@ -44,13 +48,26 @@ void downloadData(){
 }
 
 void deleteFlashFiles(){
-    system(string("rm -f " + signalsToRpiFolder() + "/*" + FLASHFILEFOLDER + "/*").c_str());
+    /*Deletes all files in all mac-folders */
+    system(string("rm -f " + flashFilesToRpiFolder() + "/*" + "/*").c_str());
+}
+
+void uploadFlashes(){
+    for (const auto & entry : filesystem::directory_iterator(flashFilesToRpiFolder())){
+        string macOfEntry = entry.path().string().substr((flashFilesToRpiFolder()).length() , string::npos);
+        string localPath = flashFilesToRpiFolder() + "/" + macOfEntry + "/";
+        string remoteFlashPath = remoteSignalsToRpiFolder() + "/" + macOfEntry + FLASHFILEFOLDER;
+        rcloneCommand("copy " + localPath + " " + remoteFlashPath);
+    }
 }
 
 void uploadData(){
+    uploadFlashes();
+
     string localpath = signalsToRpiFolder();
     string remotepath = remoteSignalsToRpiFolder();
     rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+
 }
 
 string logPath(){
@@ -108,7 +125,6 @@ void startExperiment(){
         system(string(("touch ") + string(entry.path()) + SIGNAL_NEWEXPERIMENT_FILE).c_str());
     }
     downloadData();
-    this_thread::sleep_for(chrono::seconds(1));
     uploadData();
     deleteFlashFiles();
     /*We only want to upload once, to ensure no confusion on the rpis*/
@@ -177,8 +193,9 @@ void removeInactive(){
 
                 if ((currentTime - oldTime) > KICKOUT_OFFLINE_TIME){
                     /*We ditch both signal folders*/
-                    pathsToDelete.push_back(string(entry.path()));
-                    pathsToDelete.push_back(string(remoteSignalsToRpiFolder() + macOfEntry));
+                    pathsToDelete.push_back(string(signalsFromRpiFolder() + macOfEntry));
+                    pathsToDelete.push_back(string(signalsToRpiFolder() + macOfEntry));
+                    pathsToDelete.push_back(string(flashFilesToRpiFolder() + macOfEntry));
                     purgeRemote(remoteSignalsToRpiFolder() + macOfEntry);
                     purgeRemote(remoteSignalsFromRpiFolder() + macOfEntry);
                 }
@@ -195,7 +212,9 @@ void removeInactive(){
 
             /*We ensure we have a upload-folder. Full path is found by substituting download-root with upload-root. We need somewhere to dump flashes*/
             string uploadFolder = regex_replace(string(entry.path()), regex(signalsFromRpiFolder()), signalsToRpiFolder());
-            system(string("mkdir -p " + uploadFolder + FLASHFILEFOLDER).c_str());
+            string flashFolder = flashFilesToRpiFolder() + macOfEntry;
+            system(string("mkdir -p " + uploadFolder).c_str());
+            system(string("mkdir -p " + flashFolder).c_str());
         }
     }       
 
@@ -221,8 +240,8 @@ int main(){
         string command = "mkdir -p " + logPath() + to_string(i);
         system(command.c_str());
     }
-
-    initialDownload();
+    
+//    initialDownload();
 
     while(1){
         /*Download*/
