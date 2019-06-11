@@ -171,7 +171,11 @@ bool directoryCheck(){
     paths_needed[3] = localSigToRpiFolder();
 
     for (int i = 0; i < 4; i++){
-        string command = "mkdir -p " + paths_needed[i];
+        /*We do a reset */
+        string command = "rm -rf " + paths_needed[i];
+        system(command.c_str());
+        /*We create the folders */
+        command = "mkdir -p " + paths_needed[i];
         system(command.c_str());
     }
 
