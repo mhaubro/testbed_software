@@ -15,6 +15,8 @@
 #include <sstream>
 #include <filesystem>
 #include <chrono>
+#include <iomanip>
+#include <ctime>
 
 using namespace std;
 
@@ -91,6 +93,19 @@ void checkForExistingLogs(){
 /*Not implemented yet*/
 }
 
+void AppendToPiLog(string data){
+    string piLogFile = localSigFromRpiFolder() + "/pilog";
+
+    /*Get time to print */
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+
+    string time = oss.str() + ": ";
+    system(string("echo \"" + time + data + "\" >> " + piLogFile).c_str());
+}
+
 /*Gets array with grabserial process ids*/
 vector<int> getGrabSerialProcessArray(){
     /* Grab PIDs of grabserial processes */
@@ -119,7 +134,7 @@ void terminateGrabSerial(){
 
 /*Start grabserial*/
 void startGrabSerial(){
-    cout << "start_grab" << endl;
+    AppendToPiLog(string("start_grab"));
     system("stty 115200 -F /dev/ttyACM0");
     system("pkill grabserial");
     system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
@@ -223,6 +238,8 @@ bool checkForDevice(){
 }
 
 void resetMCU(){
+    AppendToPiLog("Resetting");
+
     system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"reset run exit\"").c_str());
 }
 
@@ -231,9 +248,10 @@ void stopMCU(){
 }
 
 void flashAndStopMCU(){
-
+    AppendToPiLog("Flashing");
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
     for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
+        AppendToPiLog("Flashing entry " + string(entry.path()));
         system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
     }
     /*Delete all files in folder*/
