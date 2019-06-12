@@ -55,8 +55,8 @@ void deleteFlashFiles(){
 void uploadFlashes(){
     for (const auto & entry : filesystem::directory_iterator(flashFilesToRpiFolder())){
         string macOfEntry = entry.path().string().substr((flashFilesToRpiFolder()).length() , string::npos);
-        string localPath = flashFilesToRpiFolder() + "/" + macOfEntry + "/";
-        string remoteFlashPath = remoteSignalsToRpiFolder() + "/" + macOfEntry + FLASHFILEFOLDER;
+        string localPath = flashFilesToRpiFolder() + macOfEntry + "/";
+        string remoteFlashPath = remoteSignalsToRpiFolder() + macOfEntry + FLASHFILEFOLDER;
         rcloneCommand("copy " + localPath + " " + remoteFlashPath);
     }
 }
