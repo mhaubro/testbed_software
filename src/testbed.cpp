@@ -168,6 +168,9 @@ void uploadData(){
     string localpath = localOutputUploadFolder();
     string remotepath = myRemoteOutputFolder();
     rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+    string localpath = localSigFromRpiFolder();
+    string remotepath = myremoteSignalsFromRpiFolder();
+    rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
