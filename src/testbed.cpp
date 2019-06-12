@@ -287,7 +287,6 @@ void programLoop(){
 
         if (newExperimentFlag()){
             terminateGrabSerial();
-            uploadData();
             flashAndStopMCU();
             /*We wait for mcu flashing*/
             this_thread::sleep_for(chrono::seconds(1));
@@ -297,6 +296,8 @@ void programLoop(){
             deleteFolder(localOutputFolder() + "/*");
             /*We start recording again*/
             startGrabSerial();
+            /*We make sure we are recording */
+            this_thread::sleep_for(chrono::seconds(5));
             resetMCU();
             start = chrono::steady_clock::now();
         }
