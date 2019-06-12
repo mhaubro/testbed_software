@@ -120,6 +120,7 @@ void terminateGrabSerial(){
 /*Start grabserial*/
 void startGrabSerial(){
     cout << "start_grab" << endl;
+    system("stty 115200 -F /dev/ttyACM0");
     system("pkill grabserial");
     system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
     //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/logacm1.txt"  + " -S -T &").c_str());
@@ -297,7 +298,9 @@ void programLoop(){
             /*We start recording again*/
             startGrabSerial();
             /*We make sure we are recording */
-            this_thread::sleep_for(chrono::seconds(5));
+            this_thread::sleep_for(chrono::seconds(1));
+            system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logACM0").c_str());
+            this_thread::sleep_for(chrono::seconds(1));
             resetMCU();
             start = chrono::steady_clock::now();
         }
