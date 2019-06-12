@@ -299,7 +299,7 @@ void programLoop(){
             startGrabSerial();
             /*We make sure we are recording */
             this_thread::sleep_for(chrono::seconds(1));
-            system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logACM0").c_str());
+            system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logacm0.txt").c_str());
             this_thread::sleep_for(chrono::seconds(1));
             resetMCU();
             start = chrono::steady_clock::now();
