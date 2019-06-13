@@ -55,7 +55,7 @@ void deleteFlashFiles(){
 void uploadFlashes(){
     for (const auto & entry : filesystem::directory_iterator(flashFilesToRpiFolder())){
         string macOfEntry = entry.path().string().substr((flashFilesToRpiFolder()).length() , string::npos);
-        string localPath = flashFilesToRpiFolder() + macOfEntry + "/";
+        string localPath = flashFilesToRpiFolder() + macOfEntry;
         string remoteFlashPath = remoteSignalsToRpiFolder() + macOfEntry + FLASHFILEFOLDER;
         rcloneCommand("copy " + localPath + " " + remoteFlashPath);
     }
@@ -115,6 +115,7 @@ void deleteFlags(){
 
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
+    uploadData();
     for (const auto & entry : filesystem::directory_iterator(signalsToRpiFolder())){
         if (!entry.is_directory()){
             continue;
@@ -124,8 +125,9 @@ void startExperiment(){
         /*Indicate we want to do a new experiment*/
         system(string(("touch ") + string(entry.path()) + SIGNAL_NEWEXPERIMENT_FILE).c_str());
     }
-    downloadData();
+    deleteFlashFiles();
     uploadData();
+    downloadData();
     deleteFlashFiles();
     /*We only want to upload once, to ensure no confusion on the rpis*/
     deleteFlags();
