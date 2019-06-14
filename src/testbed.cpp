@@ -278,6 +278,7 @@ void flashAndStopMCU(){
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
     /*Delete all files online*/
     deleteRemote(myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
+    rcloneCommand("touch " + myremoteSignalsFromRpiFolder() + "/flashed");
 
     stopMCU();
 }
