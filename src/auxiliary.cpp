@@ -70,3 +70,9 @@ bool fileExists(string path){
     else
         return false;
 }
+
+std::ifstream::pos_type filesize(string filename)
+{
+    std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
+    return in.tellg(); 
+}

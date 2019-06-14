@@ -22,6 +22,7 @@ using namespace std;
 
 //We assume the mac should only be found once. Also, this is the pure mac, without any slashes.
 char mac[18];
+int currentLog;
 
 string localSigFromRpiFolder(){
     string path = getMyDirectory() + "/SigFromRpi";
@@ -224,7 +225,23 @@ bool checkGrabSerialAlive(){
     return (getGrabSerialProcessArray().size() == 1);
 }
 
+/*If larger than 3mb, dump data a new place */
+void checkLogSizes(){
+    if (filesize(localOutputFolder() + "/logacm0.txt") > 3*1000000){
+        /*We rename */
+        system(string("mv -f " + localOutputFolder() + "/logacm0.txt " + localOutputFolder() + "/previousLogs" + to_string(currentLog)).c_str());
+        currentLog++;
+        system(string("rm -f " + localOutputFolder() + "/logacm0.txt").c_str());
+        uint32_t grabserial_process_number = stoi(exec("pgrep grabserial"));
+        /*We start running again */
+        system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
+        /*We kill old process */
+        system(string("kill -SIGTERM " + to_string(grabserial_process_number)).c_str());
 
+    } else {
+        return;
+    }
+}
 
 
 /* Something better might be nice */
@@ -308,7 +325,11 @@ void programLoop(){
         cout << "downloading\n";
         downloadData();
 
+        checkLogSizes();
+
         if (newExperimentFlag()){
+            currentLog = 0;
+
             terminateGrabSerial();
             flashAndStopMCU();
             /*We wait for mcu flashing*/
@@ -335,7 +356,7 @@ void programLoop(){
 int main(){
 
     //this_thread::sleep_for(chrono::seconds(WAITTIME));
-
+    currentLog = 0;
     bool macSucces = getMacAddress(mac);
 
     directoryCheck();

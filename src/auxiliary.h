@@ -14,6 +14,7 @@
 #include <vector>
 #include <sstream>
 #include <filesystem>
+#include <fstream>
 
 using namespace std;
 string getRemoteDirectory();
@@ -45,6 +46,7 @@ string remoteOutputFolder();
 
 bool folderExists(string path);
 bool fileExists(string path);
+std::ifstream::pos_type filesize(string filename);
 
 
 #endif
