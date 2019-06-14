@@ -260,11 +260,11 @@ bool checkForDevice(){
 void resetMCU(){
     AppendToPiLog("Resetting");
 
-    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"reset run exit\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run exit\"").c_str());
 }
 
 void stopMCU(){
-    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"reset halt exit\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset halt exit\"").c_str());
 }
 
 void flashAndStopMCU(){
@@ -272,7 +272,12 @@ void flashAndStopMCU(){
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
     for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
         AppendToPiLog("Flashing entry " + string(entry.path()));
-        system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
+        string retval = "";
+        int attempts = 0;
+        do {
+            retval = exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
+            attempts++;
+        } while(retval.find(string("Verified OK")) == std::string::npos && (attempts < 3));
     }
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
@@ -307,7 +312,12 @@ void downloadData(){
     cout << "Downloading\n";
     string localpath = localSigToRpiFolder();
     string remotepath = myremoteSignalsToRpiFolder();
-    rcloneCommand("copy " + remotepath + " " + localpath);
+    string retval;
+    int attempts = 0;
+        do {
+            retval = exec(string("rclone sync " + remotepath + " " + localpath).c_str());
+            attempts++;
+        } while(retval.find(string("ERROR")) == std::string::npos && (attempts < 3));
 }
 
 void programLoop(){

@@ -116,6 +116,7 @@ void deleteFlags(){
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
     uploadData();
+    deleteFlashFiles();
     for (const auto & entry : filesystem::directory_iterator(signalsToRpiFolder())){
         if (!entry.is_directory()){
             continue;
@@ -125,10 +126,7 @@ void startExperiment(){
         /*Indicate we want to do a new experiment*/
         system(string(("touch ") + string(entry.path()) + SIGNAL_NEWEXPERIMENT_FILE).c_str());
     }
-    deleteFlashFiles();
     uploadData();
-    downloadData();
-    deleteFlashFiles();
     /*We only want to upload once, to ensure no confusion on the rpis*/
     deleteFlags();
     /*Resetting logs*/
@@ -209,7 +207,7 @@ void removeInactive(){
             /*We delete all warning-files as well as liveness-files, and see if they're still there the next time*/
             deleteFile(warning);
             /*Prior part is base path, entry.path()... is '/mac address. We just delete everything inside the folder*/
-            string remotePathFromRoot = remoteSignalsFromRpiFolder() + macOfEntry;
+            string remotePathFromRoot = remoteSignalsFromRpiFolder() + macOfEntry + SIGNAL_LIVE_FILE;
             deleteRemote(remotePathFromRoot);
 
             /*We ensure we have a upload-folder. Full path is found by substituting download-root with upload-root. We need somewhere to dump flashes*/
@@ -258,6 +256,7 @@ int main(){
         if (fileExists(startExperimentFile())){
             deleteFile(startExperimentFile());
             startExperiment();
+            this_thread::sleep_for(chrono::seconds(10));
         }
         
     }        
