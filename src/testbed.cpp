@@ -277,7 +277,7 @@ void flashAndStopMCU(){
         do {
             retval = exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
             attempts++;
-        } while(retval.find(string("Verified OK")) == std::string::npos && (attempts < 3));
+        } while((retval.find(string("Verified OK")) == std::string::npos) && (attempts < 3));
     }
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
