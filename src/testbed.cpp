@@ -272,12 +272,7 @@ void flashAndStopMCU(){
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
     for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
         AppendToPiLog("Flashing entry " + string(entry.path()));
-        string retval = "";
-        int attempts = 0;
-        do {
-            retval = exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
-            attempts++;
-        } while((retval.find(string("Verified OK")) == std::string::npos) && (attempts < 3));
+        exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
     }
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());

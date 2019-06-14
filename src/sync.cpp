@@ -118,13 +118,14 @@ void startExperiment(){
     uploadData();
     deleteFlashFiles();
     for (const auto & entry : filesystem::directory_iterator(signalsToRpiFolder())){
-        if (!entry.is_directory()){
-            continue;
-        }
+        // if (!entry.is_directory()){
+        //     continue;
+        // }
         /*Uploads signals of all subdirectories*/
         string path = string(entry.path());
         /*Indicate we want to do a new experiment*/
-        system(string(("touch ") + string(entry.path()) + SIGNAL_NEWEXPERIMENT_FILE).c_str());
+        string macOfEntry = entry.path().string().substr((signalsToRpiFolder()).length() , string::npos);
+        rcloneCommand(string(("touch ") + remoteSignalsToRpiFolder() + macOfEntry + SIGNAL_NEWEXPERIMENT_FILE).c_str());
     }
     uploadData();
     /*We only want to upload once, to ensure no confusion on the rpis*/
