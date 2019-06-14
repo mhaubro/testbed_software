@@ -39,12 +39,12 @@ void downloadData(){
     /*Data*/
     string localpath = experimentFolder();
     string remotepath = remoteOutputFolder();
-    rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
+    rcloneCommand("sync " + remotepath + " " + localpath + " --create-empty-src-dirs");
 
     /*Signals*/
     localpath = signalsFromRpiFolder();
     remotepath = remoteSignalsFromRpiFolder();
-    rcloneCommand("copy " + remotepath + " " + localpath + " --create-empty-src-dirs");
+    rcloneCommand("sync " + remotepath + " " + localpath + " --create-empty-src-dirs");
 }
 
 void deleteFlashFiles(){
