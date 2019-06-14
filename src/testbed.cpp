@@ -277,7 +277,7 @@ void flashAndStopMCU(){
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
     /*Delete all files online*/
-    rcloneCommand("deleteFile " + myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
+    rcloneCommand("delete " + myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
     rcloneCommand("touch " + myremoteSignalsFromRpiFolder() + "/flashed.sig");
 
     stopMCU();
@@ -287,7 +287,7 @@ bool newExperimentFlag(){
     if (fileExists(localNewExperimentFlagPath())){
             AppendToPiLog("New Experiment Flag Seen\n");
         deleteFile(localNewExperimentFlagPath());
-        rcloneCommand("deleteFile " + myRemoteNewExperimentFlagPath());
+        rcloneCommand("deletefile " + myRemoteNewExperimentFlagPath());
         return true;
     }
     return false;
