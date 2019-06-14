@@ -209,20 +209,17 @@ void removeInactive(){
             deleteFile(warning);
             /*Prior part is base path, entry.path()... is '/mac address. We just delete everything inside the folder*/
             string remotePathFromRoot = remoteSignalsFromRpiFolder() + macOfEntry + SIGNAL_LIVE_FILE;
-            deleteRemote(remotePathFromRoot);
+            rcloneCommand("deletefile " + remotePathFromRoot);
 
             /*We ensure we have a upload-folder. Full path is found by substituting download-root with upload-root. We need somewhere to dump flashes*/
             string uploadFolder = regex_replace(string(entry.path()), regex(signalsFromRpiFolder()), signalsToRpiFolder());
             string flashFolder = flashFilesToRpiFolder() + macOfEntry;
             system(string("mkdir -p " + uploadFolder).c_str());
             system(string("mkdir -p " + flashFolder).c_str());
+            deleteFile(liveness);
         }
     }       
 
-    for (int i = 0; i < pathsToDelete.size(); i++){
-        string cmd = string("rm -rf ") + pathsToDelete[i];/*Delete everything in folder*/
-        system(cmd.c_str());
-    }
 
     /*We remove the live-signals, but anticipate to see them again*/
     system(string("rm -f " + signalsFromRpiFolder() + "/*" + SIGNAL_LIVE_FILE).c_str());

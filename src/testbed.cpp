@@ -277,8 +277,8 @@ void flashAndStopMCU(){
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
     /*Delete all files online*/
-    deleteRemote(myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
-    rcloneCommand("touch " + myremoteSignalsFromRpiFolder() + "/flashed");
+    rcloneCommand("deleteFile " + myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
+    rcloneCommand("touch " + myremoteSignalsFromRpiFolder() + "/flashed.sig");
 
     stopMCU();
 }
@@ -287,7 +287,7 @@ bool newExperimentFlag(){
     if (fileExists(localNewExperimentFlagPath())){
             AppendToPiLog("New Experiment Flag Seen\n");
         deleteFile(localNewExperimentFlagPath());
-        deleteRemote(myRemoteNewExperimentFlagPath());
+        rcloneCommand("deleteFile " + myRemoteNewExperimentFlagPath());
         return true;
     }
     return false;
@@ -347,7 +347,6 @@ void programLoop(){
             /*We start recording again*/
             startGrabSerial();
             /*We make sure we are recording */
-            this_thread::sleep_for(chrono::seconds(1));
             //system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logacm0.txt").c_str());
             this_thread::sleep_for(chrono::seconds(1));
             resetMCU();
@@ -355,7 +354,7 @@ void programLoop(){
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
-        this_thread::sleep_for(chrono::seconds(WAITTIME)); 
+        this_thread::sleep_for(chrono::seconds(2)); 
     }
 }
 
