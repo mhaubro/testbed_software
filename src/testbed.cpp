@@ -87,7 +87,23 @@ string myremoteFlashFileFolder(){
     string path = myremoteSignalsToRpiFolder() + FLASHFILEFOLDER;
     return path;    
 }
-
+/*If larger than 5mb, we just stop */
+bool checkLogSizes(){
+    if (filesize(localOutputFolder() + "/logacm0.txt") > 10*5000000){
+        /*We rename */
+        // system(string("mv -f " + localOutputFolder() + "/logacm0.txt " + localOutputFolder() + "/previousLogs" + to_string(currentLog)).c_str());
+        // currentLog++;
+        // system(string("rm -f " + localOutputFolder() + "/logacm0.txt").c_str());
+        // uint32_t grabserial_process_number = stoi(exec("pgrep grabserial"));
+        // /*We start running again */
+        // system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
+        // /*We kill old process */
+        // system(string("kill -SIGTERM " + to_string(grabserial_process_number)).c_str());
+        return true;
+    } else {
+        return false;
+    }
+}
 
 /*If the machine is rebooted or this program restarted, we check if there is something already, to not overwrite old data*/
 void checkForExistingLogs(){
@@ -227,23 +243,7 @@ bool checkGrabSerialAlive(){
     return (getGrabSerialProcessArray().size() == 1);
 }
 
-/*If larger than 10mb, we just stop */
-bool checkLogSizes(){
-    if (filesize(localOutputFolder() + "/logacm0.txt") > 10*1000000){
-        /*We rename */
-        // system(string("mv -f " + localOutputFolder() + "/logacm0.txt " + localOutputFolder() + "/previousLogs" + to_string(currentLog)).c_str());
-        // currentLog++;
-        // system(string("rm -f " + localOutputFolder() + "/logacm0.txt").c_str());
-        // uint32_t grabserial_process_number = stoi(exec("pgrep grabserial"));
-        // /*We start running again */
-        // system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
-        // /*We kill old process */
-        // system(string("kill -SIGTERM " + to_string(grabserial_process_number)).c_str());
-        return true;
-    } else {
-        false;
-    }
-}
+
 
 
 /* Something better might be nice */
