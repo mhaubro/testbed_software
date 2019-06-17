@@ -152,7 +152,6 @@ void terminateGrabSerial(){
 /*Start grabserial*/
 void startGrabSerial(){
     AppendToPiLog(string("start_grab"));
-    system("stty 115200 -F /dev/ttyACM0");
     system("pkill grabserial");
     system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
     //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime > " + localOutputFolder() + "/logacm1.txt"  + " -S -T &").c_str());
@@ -273,7 +272,6 @@ void flashAndStopMCU(){
     AppendToPiLog("Flashing");
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
     for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
-        AppendToPiLog("Flashing entry " + string(entry.path()));
         exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
     }
     /*Delete all files in folder*/
@@ -282,7 +280,7 @@ void flashAndStopMCU(){
     rcloneCommand("delete " + myremoteSignalsToRpiFolder() + FLASHFILEFOLDER);
     rcloneCommand("touch " + myremoteSignalsFromRpiFolder() + "/flashed.sig");
 
-    stopMCU();
+//    stopMCU();
 }
 
 bool newExperimentFlag(){
@@ -336,9 +334,7 @@ void programLoop(){
         checkLogSizes();
 
         if (newExperimentFlag()){
-            currentLog = 0;
-
-            terminateGrabSerial();
+            downloadData();
             flashAndStopMCU();
             /*We wait for mcu flashing*/
             this_thread::sleep_for(chrono::seconds(1));
@@ -347,12 +343,7 @@ void programLoop(){
             /*Delete contents of my folder*/
             deleteFolder(localOutputFolder() + "/*");
             /*We start recording again*/
-            startGrabSerial();
-            /*We make sure we are recording */
             //system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logacm0.txt").c_str());
-            this_thread::sleep_for(chrono::seconds(1));
-            resetMCU();
-            start = chrono::steady_clock::now();
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
