@@ -335,15 +335,12 @@ void programLoop(){
 
         if (newExperimentFlag()){
             downloadData();
-            flashAndStopMCU();
-            /*We wait for mcu flashing*/
-            this_thread::sleep_for(chrono::seconds(1));
-            /*We delete everything in our local folder and remote*/
+
             deleteRemote(myRemoteOutputFolder());
-            /*Delete contents of my folder*/
+            system("pkill grabserial");
             deleteFolder(localOutputFolder() + "/*");
-            /*We start recording again*/
-            //system(string("echo -n \"Experiment Started\n\" >> " + localOutputFolder() + "/logacm0.txt").c_str());
+            flashAndStopMCU();
+            startGrabSerial();
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
