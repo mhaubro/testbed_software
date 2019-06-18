@@ -261,18 +261,25 @@ bool checkForDevice(){
 void resetMCU(){
     AppendToPiLog("Resetting");
 
-    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset run exit\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset init reset run exit\"").c_str());
 }
 
 void stopMCU(){
-    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset halt exit\"").c_str());
+    system(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"init reset init reset run exit\"").c_str());
 }
 
 void flashAndStopMCU(){
     AppendToPiLog("Flashing");
     /*This implies trying to flash all files. SO ONLY LEAVE 1 FILE IN THE DIRECTORY */
+    int flashed = 0;
     for (const auto & entry : filesystem::directory_iterator(localFlashFileFolder())){
+
         exec(string("openocd -s /usr/local/share/openocd/scripts/ -f board/ti_cc13x0_launchpad.cfg -c \"program " + string(entry.path()) + " verify reset exit\"").c_str());
+
+        flashed = 1;
+    }
+    if (!flashed){
+        resetMCU();/*We push the reset button*/
     }
     /*Delete all files in folder*/
     system(string("rm -rf " + localFlashFileFolder() + "/*").c_str());
@@ -337,6 +344,7 @@ void programLoop(){
             downloadData();
 
             deleteRemote(myRemoteOutputFolder());
+            stopMCU();
             system("pkill grabserial");
             deleteFolder(localOutputFolder() + "/*");
             flashAndStopMCU();
