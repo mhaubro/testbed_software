@@ -347,8 +347,8 @@ void programLoop(){
             stopMCU();
             system("pkill grabserial");
             deleteFolder(localOutputFolder() + "/*");
-            flashAndStopMCU();
             startGrabSerial();
+            flashAndStopMCU();
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
