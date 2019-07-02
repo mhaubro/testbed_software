@@ -116,7 +116,7 @@ void deleteFlags(){
 void startExperiment(){
     /*Indicate to everyone we want to do a new experiment*/
     uploadData();
-    deleteFlashFiles();
+    //deleteFlashFiles();
     for (const auto & entry : filesystem::directory_iterator(signalsToRpiFolder())){
         // if (!entry.is_directory()){
         //     continue;

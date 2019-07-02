@@ -306,7 +306,7 @@ bool goFlag(){
         deleteRemote(myRemoteGoFlagPath());
         return true;
     }
-    return false;
+    return false; 
 }
 
 /*flash and signals*/
