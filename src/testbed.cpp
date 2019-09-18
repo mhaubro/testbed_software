@@ -89,16 +89,7 @@ string myremoteFlashFileFolder(){
 }
 /*If larger than 5mb, we just stop */
 bool checkLogSizes(){
-    if (filesize(localOutputFolder() + "/logacm0.txt") > 10*5000000){
-        /*We rename */
-        // system(string("mv -f " + localOutputFolder() + "/logacm0.txt " + localOutputFolder() + "/previousLogs" + to_string(currentLog)).c_str());
-        // currentLog++;
-        // system(string("rm -f " + localOutputFolder() + "/logacm0.txt").c_str());
-        // uint32_t grabserial_process_number = stoi(exec("pgrep grabserial"));
-        // /*We start running again */
-        // system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
-        // /*We kill old process */
-        // system(string("kill -SIGTERM " + to_string(grabserial_process_number)).c_str());
+    if (filesize(localOutputFolder() + "/logacm0.txt") > 1000000){
         return true;
     } else {
         return false;
@@ -179,16 +170,15 @@ void uploadData(){
     publishMe();
 
     /*Copy data such that rclone doesn't try to upload stuff being edited. We only do this if we haven't spent our 10mb */
-    if (!checkLogSizes()){
-        system(string("cp -a " + localOutputFolder() + "/* " + localOutputUploadFolder() + "/").c_str());
-    }
+    if (checkLogSizes()){
     /*Actual uploads*/
-    string localpath = localOutputUploadFolder();
-    string remotepath = myRemoteOutputFolder();
-    rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
-    localpath = localSigFromRpiFolder();
-    remotepath = myremoteSignalsFromRpiFolder();
-    rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        string localpath = localOutputUploadFolder();
+        string remotepath = myRemoteOutputFolder();
+        rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        localpath = localSigFromRpiFolder();
+        remotepath = myremoteSignalsFromRpiFolder();
+        rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
+    }
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
