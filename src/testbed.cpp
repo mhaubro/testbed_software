@@ -346,11 +346,6 @@ void programLoop(){
 
 int main(){
 
-    //this_thread::sleep_for(chrono::seconds(WAITTIME));
-
-    system("sudo apt-get install ntpdate -y");
-    system("sudo ntpdate pool.ntp.org");
-
     currentLog = 0;
     bool macSucces = getMacAddress(mac);
 
