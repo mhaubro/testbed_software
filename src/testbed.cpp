@@ -92,7 +92,7 @@ bool checkLogSizes(){
     if (filesize(localOutputFolder() + "/logacm0.txt") > 1000000){
         return true;
     } else {
-        return false;
+        return true;
     }
 }
 
@@ -327,8 +327,6 @@ void programLoop(){
 
         cout << "downloading\n";
         downloadData();
-
-        checkLogSizes();
 
         if (newExperimentFlag()){
             downloadData();
