@@ -170,7 +170,7 @@ void uploadData(){
     publishMe();
 
     /*Copy data such that rclone doesn't try to upload stuff being edited. We only do this if we haven't spent our 10mb */
-    if (checkLogSizes()){
+    //if (checkLogSizes()){
     /*Actual uploads*/
         string localpath = localOutputUploadFolder();
         string remotepath = myRemoteOutputFolder();
@@ -178,7 +178,7 @@ void uploadData(){
         localpath = localSigFromRpiFolder();
         remotepath = myremoteSignalsFromRpiFolder();
         rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
-    }
+    //}
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
