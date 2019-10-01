@@ -32,13 +32,14 @@ string localSigToRpiFolder(){
     string path = getMyDirectory() + "/SigToRpi";
     return path;
 }
-string localOutputFolder(){
-    return localOutputUploadFolder();
-}
 string localOutputUploadFolder(){
     string path = getMyDirectory() + "/output";
     return path;
 }
+string localOutputFolder(){
+    return localOutputUploadFolder();
+}
+
 string localFlashFileFolder(){
     string path = localSigToRpiFolder() + FLASHFILEFOLDER;
     return path;
