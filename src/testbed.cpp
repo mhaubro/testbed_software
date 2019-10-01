@@ -175,6 +175,7 @@ void uploadData(){
         string localpath = localOutputUploadFolder();
         string remotepath = myRemoteOutputFolder();
         rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        std::cout << std::string("sync " + localpath + " " + remotepath + " --create-empty-src-dirs\n");
         localpath = localSigFromRpiFolder();
         remotepath = myremoteSignalsFromRpiFolder();
         rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
