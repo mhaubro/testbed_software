@@ -33,8 +33,7 @@ string localSigToRpiFolder(){
     return path;
 }
 string localOutputFolder(){
-    string path = getMyDirectory() + "/tempoutput";
-    return path;
+    return localOutputUploadFolder();
 }
 string localOutputUploadFolder(){
     string path = getMyDirectory() + "/output";
