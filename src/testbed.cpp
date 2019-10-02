@@ -37,7 +37,7 @@ string localOutputUploadFolder(){
     return path;
 }
 string localOutputFolder(){
-    return localOutputUploadFolder() + "/output";
+    return getMyDirectory() + "/output";
 }
 
 string localFlashFileFolder(){
@@ -90,7 +90,7 @@ string myremoteFlashFileFolder(){
 /*If larger than 5mb, we just stop */
 bool checkLogSizes(){
     if (filesize(localOutputFolder() + "/logacm0.txt") > 1000000){
-        return true;
+        return false;
     } else {
         return true;
     }
