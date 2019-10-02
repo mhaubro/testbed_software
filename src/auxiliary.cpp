@@ -1,5 +1,6 @@
 
 #include "auxiliary.h"
+#include "experimental/filesystem"
 using namespace std;
 
 string getRemoteDirectory(){
@@ -73,6 +74,7 @@ bool fileExists(string path){
 
 std::ifstream::pos_type filesize(string filename)
 {
-    std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
-    return in.tellg(); 
+    std::experimental::filesystem::path p{filename};
+    p = std::experimental::filesystem::canonical(p);
+    return std::experimental::filesystem::file_size(p); 
 }
