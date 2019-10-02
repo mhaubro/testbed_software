@@ -181,11 +181,11 @@ void uploadData(){
         copylog();
         string localpath = localOutputUploadFolder();
         string remotepath = myRemoteOutputFolder();
-        rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
-        std::cout << std::string("sync " + localpath + " " + remotepath + " --create-empty-src-dirs\n");
+        rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        std::cout << std::string("copy " + localpath + " " + remotepath + " --create-empty-src-dirs\n");
         localpath = localSigFromRpiFolder();
         remotepath = myremoteSignalsFromRpiFolder();
-        rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
     }
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
