@@ -14,7 +14,7 @@ string getMyDirectory(){
 }
 
 void deleteFile(string path){
-    string command = "rm " + path;
+    string command = "rm -f" + path;
     system(command.c_str());
 }
 

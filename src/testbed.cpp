@@ -33,11 +33,11 @@ string localSigToRpiFolder(){
     return path;
 }
 string localOutputUploadFolder(){
-    string path = getMyDirectory() + "/output";
+    string path = getMyDirectory() + "/upload";
     return path;
 }
 string localOutputFolder(){
-    return localOutputUploadFolder();
+    return localOutputUploadFolder() + "/output";
 }
 
 string localFlashFileFolder(){
@@ -165,6 +165,12 @@ void publishMe(){
     rcloneCommand("mkdir " + myremoteFlashFileFolder());
 }
 
+void copylog(){
+    string src = localOutputFolder();
+    string dest = localOutputUploadFolder();
+    system(string("cp " + src + " " + dest).c_str());
+}
+
 void uploadData(){
     cout << "Uploading\n";
     publishMe();
@@ -172,6 +178,7 @@ void uploadData(){
     /*Copy data such that rclone doesn't try to upload stuff being edited. We only do this if we haven't spent our 10mb */
     if (checkLogSizes()){
     /*Actual uploads*/
+        copylog();
         string localpath = localOutputUploadFolder();
         string remotepath = myRemoteOutputFolder();
         rcloneCommand("sync " + localpath + " " + remotepath + " --create-empty-src-dirs");
@@ -335,7 +342,7 @@ void programLoop(){
             deleteRemote(myRemoteOutputFolder());
             stopMCU();
             system("pkill grabserial");
-            deleteFolder(localOutputFolder() + "/*");
+            deleteFile(localOutputFolder() + "/*");
             startGrabSerial();
             flashAndStopMCU();
         }
