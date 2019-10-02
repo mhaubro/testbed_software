@@ -1,6 +1,6 @@
 
 #include "auxiliary.h"
-#include "experimental/filesystem"
+#include <sys/stat.h>
 using namespace std;
 
 string getRemoteDirectory(){
@@ -72,9 +72,11 @@ bool fileExists(string path){
         return false;
 }
 
-std::ifstream::pos_type filesize(string filename)
+int filesize(string filename)
 {
-    std::experimental::filesystem::path p{filename};
-    p = std::experimental::filesystem::canonical(p);
-    return std::experimental::filesystem::file_size(p); 
+    struct stat st;
+    if(stat(filename.c_str(), &st) != 0) {
+        return 0;
+    }
+    return (int) st.st_size;   
 }
