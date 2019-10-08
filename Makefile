@@ -3,6 +3,7 @@
 #
 
 CPP = g++-8
+CPPNATIVE = g++
 CPP_FLAGS = -std=c++17 -g -O2 -lstdc++fs #Using -O2 to relatively aggressively optimize. Use -g to use with gdb
 #gdb requires hacks for now.
 
@@ -27,6 +28,10 @@ $(OBJECT_DIR)/%.cpp.o: $(SOURCEDIR)/%.cpp
 	mkdir -p $(@D)
 	$(CPP) $(CPP_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
+$(OBJECT_DIR)/%.cpp.n.o: $(SOURCEDIR)/%.cpp
+	mkdir -p $(@D)
+	$(CPPNATIVE) $(CPP_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
+	
 
 #Grabs all .cpp in the search client folder
 CPP_FILES = $(wildcard $(SOURCEDIR)/*.cpp)
@@ -42,8 +47,8 @@ testbed_process: $(OBJECT_DIR)/testbed.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o $(OBJ
 
 EXECUTABLE += $(Root_Directory)/testbed_process
 
-sync_process: $(OBJECT_DIR)/sync.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o
-	$(CPP) -o $(BINDIR)/sync_process $^ $(CPP_FLAGS)
+sync_process: $(OBJECT_DIR)/sync.cpp.n.o $(OBJECT_DIR)/auxiliary.cpp.n.o
+	$(CPPNATIVE) -o $(BINDIR)/sync_process $^ $(CPP_FLAGS)
 
 #-I marks that headers can be found in a directory
 INCLUDE_TEMP += $(SCDIR)/include

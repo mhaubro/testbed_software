@@ -57,7 +57,7 @@ void uploadFlashes(){
         string macOfEntry = entry.path().string().substr((flashFilesToRpiFolder()).length() , string::npos);
         string localPath = flashFilesToRpiFolder() + macOfEntry;
         string remoteFlashPath = remoteSignalsToRpiFolder() + macOfEntry + FLASHFILEFOLDER;
-        rcloneCommand("copy " + localPath + " " + remoteFlashPath);
+        rcloneCommand("copy --copy-links " + localPath + " " + remoteFlashPath);
     }
 }
 
@@ -67,7 +67,6 @@ void uploadData(){
     string localpath = signalsToRpiFolder();
     string remotepath = remoteSignalsToRpiFolder();
     rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
-
 }
 
 string logPath(){
@@ -219,7 +218,6 @@ void removeInactive(){
             deleteFile(liveness);
         }
     }       
-
 
     /*We remove the live-signals, but anticipate to see them again*/
     system(string("rm -f " + signalsFromRpiFolder() + "/*" + SIGNAL_LIVE_FILE).c_str());

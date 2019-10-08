@@ -46,7 +46,7 @@ string remoteOutputFolder();
 
 bool folderExists(string path);
 bool fileExists(string path);
-std::ifstream::pos_type filesize(string filename);
+int filesize(string filename);
 
 
 #endif
