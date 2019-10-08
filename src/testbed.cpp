@@ -364,6 +364,8 @@ int main(){
     if (checkForDevice()){
          resetMCU();
     }
+    system("sudo timedatectl set-ntp off");
+    system("sudo timedatectl set-ntp on");
 
 
     /*//For testing          
