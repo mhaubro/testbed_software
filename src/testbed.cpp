@@ -168,7 +168,7 @@ void publishMe(){
 void copylog(){
     string src = localOutputFolder();
     string dest = localOutputUploadFolder();
-    system(string("cp " + src + " " + dest).c_str());
+    system(string("cp -r " + src + " " + dest).c_str());
 }
 
 void uploadData(){
