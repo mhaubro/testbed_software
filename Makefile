@@ -17,6 +17,9 @@ OBJECT_DIR = $(SCDIR)/objects
 #Creating directories for .o as in https://stackoverflow.com/questions/1950926/create-directories-using-make-file
 #MKDIR = mkdir -p
 #directories: ${OUT_DIR}
+all: testbed_process
+
+default: testbed_process
 
 #${OUT_DIR}:
 #	${MKDIR_P} ${OUT_DIR}
@@ -53,9 +56,6 @@ sync_process: $(OBJECT_DIR)/sync.cpp.n.o $(OBJECT_DIR)/auxiliary.cpp.n.o
 #-I marks that headers can be found in a directory
 INCLUDE_TEMP += $(SCDIR)/include
 
-all: testbed_process sync_process
-
-default: testbed_process sync_process
 
 
 #Takes all of include_temp, and puts on -I flag.

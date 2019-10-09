@@ -74,9 +74,9 @@ bool fileExists(string path){
 
 int filesize(string filename)
 {
-    struct stat st;
-    if(stat(filename.c_str(), &st) != 0) {
+//    struct stat st;
+//    if(stat(filename.c_str(), &st) != 0) {
         return 0;
-    }
-    return (int) st.st_size;   
+//    }
+//    return (int) st.st_size;   
 }
