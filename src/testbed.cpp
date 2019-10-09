@@ -169,7 +169,9 @@ void publishMe(){
 void copylog(){
     string src = localOutputFolder();
     string dest = localOutputUploadFolder();
+    printf("localcopy\n");
     rcloneCommand("copy " + src + " " + dest);
+    printf("localcopyend\n");
 //    system(string("cp -r " + src + " " + dest).c_str());
 }
 
