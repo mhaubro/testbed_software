@@ -37,7 +37,8 @@ string localOutputUploadFolder(){
     return path;
 }
 string localOutputFolder(){
-    return getMyDirectory() + "/output";
+    string path = getMyDirectory() + "/output";
+    return path;
 }
 
 string localFlashFileFolder(){
