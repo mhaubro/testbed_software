@@ -19,7 +19,7 @@ void deleteFile(string path){
 }
 
 void rcloneCommand(string cmd){
-    system(string("rclone --min-size 1k --max-size 5M" + cmd).c_str());
+    system(string("rclone --min-size 1k --max-size 5M " + cmd).c_str());
 }
 
 void deleteRemote(string path){
