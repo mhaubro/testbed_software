@@ -139,7 +139,7 @@ void startGrabSerial(){
     AppendToPiLog(string("start_grab"));
     system("pkill grabserial");
     system(string("grabserial -v -d \"/dev/ttyACM0\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm0.txt"  + " &").c_str());
-    system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm1.txt"  + " &").c_str());
+    //system(string("grabserial -v -d \"/dev/ttyACM1\" -b 115200 -w 8 -p N -s 1 -t --systime -o " + localOutputFolder() + "/logacm1.txt"  + " &").c_str());
 }
 
 /*Terminate all instances and start new ones*/
