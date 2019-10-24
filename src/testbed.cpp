@@ -368,6 +368,8 @@ int main(){
     if (checkForDevice()){
          resetMCU();
     }
+            this_thread::sleep_for(chrono::seconds(60)); 
+
     system("sudo timedatectl set-ntp off");
     system("sudo timedatectl set-ntp on");
 

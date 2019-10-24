@@ -39,12 +39,12 @@ void downloadData(){
     /*Data*/
     string localpath = experimentFolder();
     string remotepath = remoteOutputFolder();
-    rcloneCommand("sync " + remotepath + " " + localpath + " --create-empty-src-dirs");
+    rcloneCommand("sync -vv " + remotepath + " " + localpath + " --create-empty-src-dirs");
 
     /*Signals*/
     localpath = signalsFromRpiFolder();
     remotepath = remoteSignalsFromRpiFolder();
-    rcloneCommand("sync " + remotepath + " " + localpath + " --create-empty-src-dirs");
+    rcloneCommand("sync -vv " + remotepath + " " + localpath + " --create-empty-src-dirs");
 }
 
 void deleteFlashFiles(){
@@ -57,7 +57,7 @@ void uploadFlashes(){
         string macOfEntry = entry.path().string().substr((flashFilesToRpiFolder()).length() , string::npos);
         string localPath = flashFilesToRpiFolder() + macOfEntry;
         string remoteFlashPath = remoteSignalsToRpiFolder() + macOfEntry + FLASHFILEFOLDER;
-        rcloneCommand("copy --copy-links " + localPath + " " + remoteFlashPath);
+        rcloneCommand("sync --copy-links -vv " + localPath + " " + remoteFlashPath);
     }
 }
 
@@ -66,7 +66,7 @@ void uploadData(){
 
     string localpath = signalsToRpiFolder();
     string remotepath = remoteSignalsToRpiFolder();
-    rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+    rcloneCommand("copy -vv " + localpath + " " + remotepath + " --create-empty-src-dirs");
 }
 
 string logPath(){
@@ -208,7 +208,7 @@ void removeInactive(){
             deleteFile(warning);
             /*Prior part is base path, entry.path()... is '/mac address. We just delete everything inside the folder*/
             string remotePathFromRoot = remoteSignalsFromRpiFolder() + macOfEntry + SIGNAL_LIVE_FILE;
-            rcloneCommand("deletefile " + remotePathFromRoot);
+            rcloneCommand("deletefile -vv " + remotePathFromRoot);
 
             /*We ensure we have a upload-folder. Full path is found by substituting download-root with upload-root. We need somewhere to dump flashes*/
             string uploadFolder = regex_replace(string(entry.path()), regex(signalsFromRpiFolder()), signalsToRpiFolder());
