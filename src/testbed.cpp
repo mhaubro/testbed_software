@@ -90,11 +90,9 @@ string myremoteFlashFileFolder(){
 }
 /*If larger than 5mb, we just stop */
 bool checkLogSizes(){
-    if (filesize(localOutputFolder() + "/logacm0.txt") > 5000000){
-        return false;
-    } else {
+    
         return true;
-    }
+    
 }
 
 /*If the machine is rebooted or this program restarted, we check if there is something already, to not overwrite old data*/
