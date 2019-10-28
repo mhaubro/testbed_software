@@ -1,7 +1,6 @@
 [Unit]
 Description=Testbed Daemon
 After=network.target
-StartLimitIntevalSec=0
 
 [Service]
 Type=simple
