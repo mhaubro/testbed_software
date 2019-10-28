@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=root
-ExecStart=/home/rpi/testbed-software/update_testbed_software.sh
+ExecStart=/home/rpi/testbed_software/update_testbed_software.sh
 
 [Install]
 WantedBy=multi-user.target
