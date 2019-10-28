@@ -177,11 +177,11 @@ void uploadData(){
         copylog();
         string localpath = localOutputUploadFolder();
         string remotepath = myRemoteOutputFolder();
-        rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        rcloneCommand("copy --max-size 10M " + localpath + " " + remotepath + " --create-empty-src-dirs");
         std::cout << std::string("copy " + localpath + " " + remotepath + " --create-empty-src-dirs\n");
         localpath = localSigFromRpiFolder();
         remotepath = myremoteSignalsFromRpiFolder();
-        rcloneCommand("copy " + localpath + " " + remotepath + " --create-empty-src-dirs");
+        rcloneCommand("copy --max-size 10M " + localpath + " " + remotepath + " --create-empty-src-dirs");
     /*Ensuring that a signals folder will be online, as well as sending the liveness signal*/
     rcloneCommand("touch " + myRemoteLiveSignalPath());
 }
@@ -313,7 +313,7 @@ void downloadData(){
         do {
             retval = exec(string("rclone sync " + remotepath + " " + localpath).c_str());
             attempts++;
-        } while(retval.find(string("ERROR")) == std::string::npos && (attempts < 3));
+        } while(retval.find(string("ERROR")) == std::string::npos && (attepts < 3));
 }
 
 void programLoop(){
@@ -343,7 +343,7 @@ void programLoop(){
         }
 
         /*We can spam the servers as much as we want on eduroam, so we upload often*/
-        this_thread::sleep_for(chrono::seconds(2)); 
+        this_thread::sleep_for(chrono::seconds(45)); 
     }
 }
 
