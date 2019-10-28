@@ -1,0 +1,14 @@
+[Unit]
+Description=Update daemon for testbed software
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=root
+ExecStart=/home/rpi/testbed-source/update_testbed_software.sh
+
+[Install]
+WantedBy=multi-user.target

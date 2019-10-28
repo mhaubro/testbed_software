@@ -1,0 +1,14 @@
+[Unit]
+Description=Testbed Daemon
+After=network.target
+StartLimitIntevalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=root
+Execstart=/home/rpi/testbed-source/bin/testbed_process
+
+[Install]
+WantedBy=multi-user.target
