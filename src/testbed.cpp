@@ -313,7 +313,7 @@ void downloadData(){
         do {
             retval = exec(string("rclone sync " + remotepath + " " + localpath).c_str());
             attempts++;
-        } while(retval.find(string("ERROR")) == std::string::npos && (attepts < 3));
+        } while(retval.find(string("ERROR")) == std::string::npos && (attempts < 3));
 }
 
 void programLoop(){
