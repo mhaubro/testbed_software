@@ -2,7 +2,7 @@
 #
 #
 
-CPP = g++-8
+CPP = g++
 CPPNATIVE = g++
 CPP_FLAGS = -std=c++17 -g -O2 -lstdc++fs #Using -O2 to relatively aggressively optimize. Use -g to use with gdb
 #gdb requires hacks for now.
