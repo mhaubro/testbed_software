@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=root
-Execstart=/home/rpi/testbed-source/bin/testbed_process
+ExecStart=/home/rpi/testbed-source/bin/testbed_process
 
 [Install]
 WantedBy=multi-user.target
