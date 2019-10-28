@@ -45,7 +45,8 @@ OBJS = $(foreach d, $(CPPSHORT), $(OBJECT_DIR)$(d).o)
 
 #OBJ_SC = $(foreach d, $(basename $(CPP_FILES)), $(d).cpp.o)
 
-testbed_process: $(OBJECT_DIR)/testbed.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o $(OBJECT_DIR)/execcmd.cpp.o $(OBJECT_DIR)/getmac.cpp.o
+testbed_process: $(OBJECT_DIR)/testbed.cpp.o $(OBJECT_DIR)/auxiliary.cpp.o $(OBJECT_DIR)/execcmd.cpp.o $(OBJECT_DIR)/getmac.cpp.o $
+	mkdir -p $(BINDIR)
 	$(CPP) -o $(BINDIR)/testbed_process $^ $(CPP_FLAGS)
 
 EXECUTABLE += $(Root_Directory)/testbed_process
